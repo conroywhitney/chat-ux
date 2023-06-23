@@ -12,11 +12,23 @@ function get_current_weather(args: { location: string; format: string }) {
   const currentWeather = {
     location,
     temperature: '72',
-    format,
+    format: 'farenheit',
     forecast: ['sunny', 'windy'],
   };
 
   return JSON.stringify({ currentWeather });
+}
+
+function get_precipitation_percentage(args: { location: string }) {
+  const { location } = args;
+  console.log("get_precipitation_percentage", location);
+
+  const precipitationPercentage = {
+    location,
+    hourlyPercentages: [0, 0, 0, 0, 0.1, 0.15, 0.25, 0.75, 0.9, 0.95, 0.95, 0.95, 0.95, 0.9, 0.75, 0.5, 0.25, 0.1, 0, 0, 0, 0, 0, 0]
+  };
+
+  return JSON.stringify({ precipitationPercentage });
 }
 
 function get_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
@@ -143,6 +155,20 @@ const functions = [
           "required": ["location", "format", "num_days"]
       },
   },
+  {
+    "name": "get_precipitation_percentage",
+    "description": "Get the next 24 hours of precipitation percentages",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "The city and state, e.g. San Francisco, CA",
+            }
+        },
+        "required": ["location"]
+    },
+  },
 ]
 
 export async function POST(req: Request) {
@@ -172,8 +198,19 @@ export async function POST(req: Request) {
     // GPT called a function, so we need to handle it, and give the result back to GPT
     const { name, arguments: args } = message.function_call;
 
-    if (name == "get_current_weather" || name == "get_n_day_weather_forecast") {
-      const weatherResponse = (name == "get_current_weather") ? get_current_weather(JSON.parse(args)) : get_n_day_weather_forecast(JSON.parse(args));
+    if (["get_current_weather", "get_n_day_weather_forecast", "get_precipitation_percentage"].includes(name)) {
+      let weatherResponse = null;
+      switch(name) {
+        case "get_current_weather":
+          weatherResponse = get_current_weather(JSON.parse(args));
+          break;
+        case "get_n_day_weather_forecast":
+          weatherResponse = get_n_day_weather_forecast(JSON.parse(args));
+          break;
+        case "get_precipitation_percentage":
+          weatherResponse = get_precipitation_percentage(JSON.parse(args));
+          break;
+      }
 
       const secondResponse = await openai.createChatCompletion({
         function_call: "none", // don't call a function, just reply with a typical message
