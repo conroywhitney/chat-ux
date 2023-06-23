@@ -9,33 +9,29 @@ function get_current_weather(args: { location: string; format: string }) {
   const { location, format } = args;
   console.log("get_current_weather", location, format);
 
-  const currentWeather = {
+  return {
     location,
     temperature: '72',
     format: 'farenheit',
     forecast: ['sunny', 'windy'],
   };
-
-  return JSON.stringify({ currentWeather });
 }
 
 function get_precipitation_percentage(args: { location: string }) {
   const { location } = args;
   console.log("get_precipitation_percentage", location);
 
-  const precipitationPercentage = {
+  return {
     location,
     hourlyPercentages: [0, 0, 0, 0, 0.1, 0.15, 0.25, 0.75, 0.9, 0.95, 0.95, 0.95, 0.95, 0.9, 0.75, 0.5, 0.25, 0.1, 0, 0, 0, 0, 0, 0]
   };
-
-  return JSON.stringify({ precipitationPercentage });
 }
 
 function get_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
   const { location, format, num_days } = args;
   console.log("get_n_day_weather_forecast", location, format, num_days);
 
-  const weatherForecast = [
+  return [
     {
       date: "2021-06-13",
       location,
@@ -58,8 +54,6 @@ function get_n_day_weather_forecast(args: { location: string; format: string, nu
       forecast: ['thunderstorms'],
     }
   ];
-
-  return JSON.stringify({ weatherForecast });
 }
 
 /*
@@ -172,72 +166,58 @@ const functions = [
 ]
 
 export async function POST(req: Request) {
-  const json = await req.json()
-  const { messages, previewToken } = json
+  const json = await req.json();
+  const { messages } = json;
 
-  const configuration = new Configuration({
-    apiKey: previewToken || process.env.OPENAI_API_KEY
-  })
+  return await handleChatCompletion(messages, functions, 'gpt-3.5-turbo-0613', 0);
+}
 
+async function handleChatCompletion(messages: any[], functions: any[], model: string, depth: number): Promise<StreamingTextResponse> {
+  if (depth >= 10) throw new Error('Maximum recursion depth reached');
+
+  const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY })
   const openai = new OpenAIApi(configuration)
 
   const response = await openai.createChatCompletion({
-    function_call: 'auto', // allow GPT to choose whether to call a function or reply with a typical message
+    function_call: "auto",
     functions,
     messages,
-    model: 'gpt-3.5-turbo-0613',
-    stream: false, // don't stream because this edge function isn't configured for it yet
+    model,
+    stream: false,
   });
 
-  const result = await response.json(); // since we're not streaming, get the full JSON response
+  const result = await response.json();
   console.log("result", result)
 
   const { finish_reason, message } = result.choices[0];
 
-  if (finish_reason == "function_call") {
-    // GPT called a function, so we need to handle it, and give the result back to GPT
-    const { name, arguments: args } = message.function_call;
-
-    if (["get_current_weather", "get_n_day_weather_forecast", "get_precipitation_percentage"].includes(name)) {
-      let weatherResponse = null;
-      switch(name) {
-        case "get_current_weather":
-          weatherResponse = get_current_weather(JSON.parse(args));
-          break;
-        case "get_n_day_weather_forecast":
-          weatherResponse = get_n_day_weather_forecast(JSON.parse(args));
-          break;
-        case "get_precipitation_percentage":
-          weatherResponse = get_precipitation_percentage(JSON.parse(args));
-          break;
-      }
-
-      const secondResponse = await openai.createChatCompletion({
-        function_call: "none", // don't call a function, just reply with a typical message
-        functions,
-        messages: [
-          ...messages, // the list of messages from the first call
-          {
-            role: 'function',
-            name,
-            content: weatherResponse,
-          },
-        ],
-        model: 'gpt-3.5-turbo-0613',
-        stream: false, // don't stream because this edge function isn't configured for it yet
-      });
-
-      const secondResult = await secondResponse.json(); // since we're not streaming, get the full JSON response 
-      console.log("secondResult", secondResult);
-
-      // GPT returned a typical response
-      return new StreamingTextResponse(secondResult.choices[0].message.content);
-    } else {
-      // GPT called a function that we don't have a handler for
-      console.log(`Function ${message.function_call.name} not implemented`);
-    }
-  } else {
-    // GPT returned a typical response
+  if (finish_reason === 'stop') {
     return new StreamingTextResponse(message.content);
-  }  
+  } else if (finish_reason === 'function_call') {
+    const functionResult = callFunction(message.function_call.name, JSON.parse(message.function_call.arguments));
+    const newMessages = [
+      ...messages,
+      {
+        role: 'function',
+        name: message.function_call.name,
+        content: JSON.stringify(functionResult),
+      },
+    ];
+    return handleChatCompletion(newMessages, functions, model, depth + 1);
+  } else {
+    throw new Error(`Unexpected finish_reason: ${finish_reason}`);
+  }
+}
+
+function callFunction(name: string, args: any): any {
+  switch(name) {
+    case "get_current_weather":
+      return get_current_weather(args);
+    case "get_n_day_weather_forecast":
+      return get_n_day_weather_forecast(args);
+    case "get_precipitation_percentage":
+      return get_precipitation_percentage(args);
+    default:
+      throw new Error(`Unexpected function name: ${name}`);
+  }
 }
