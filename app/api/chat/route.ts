@@ -275,6 +275,7 @@ async function handleChatCompletion(messages: any[], functions: any[], model: st
   } else if (finish_reason === 'function_call') {
     if (message.function_call.name.startsWith('render_')) {
       console.log("rendering", message);
+      // @ts-ignore
       return new StreamingTextResponse(JSON.stringify(message.function_call));
     } else {
       const functionResult = callFunction(message.function_call.name, JSON.parse(message.function_call.arguments));
