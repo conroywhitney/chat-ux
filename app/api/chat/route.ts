@@ -2,65 +2,222 @@ import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
-import { auth } from '@/auth'
-import { nanoid } from '@/lib/utils'
-
 export const runtime = 'edge'
 
-export async function POST(req: Request) {
-  const json = await req.json()
-  const { messages, previewToken } = json
-  const session = await auth()
+// placeholder function for a future API call to get the weather
+function get_current_weather(args: { location: string; format: string }) {
+  const { location, format } = args;
+  console.log("get_current_weather", location, format);
 
-  if (process.env.VERCEL_ENV !== 'preview') {
-    if (session == null) {
-      return new Response('Unauthorized', { status: 401 })
+  return {
+    location,
+    temperature: '72',
+    format: 'farenheit',
+    forecast: ['sunny', 'windy'],
+  };
+}
+
+function get_precipitation_percentage(args: { location: string }) {
+  const { location } = args;
+  console.log("get_precipitation_percentage", location);
+
+  return {
+    location,
+    hourlyPercentages: [0, 0, 0, 0, 0.1, 0.15, 0.25, 0.75, 0.9, 0.95, 0.95, 0.95, 0.95, 0.9, 0.75, 0.5, 0.25, 0.1, 0, 0, 0, 0, 0, 0]
+  };
+}
+
+function get_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
+  const { location, format, num_days } = args;
+  console.log("get_n_day_weather_forecast", location, format, num_days);
+
+  return [
+    {
+      date: "2021-06-13",
+      location,
+      temperature: '80',
+      format: 'farenheit',
+      forecast: ['sunny', 'windy'],
+    },
+    {
+      date: "2021-06-14",
+      location,
+      temperature: '65',
+      format: 'farenheit',
+      forecast: ['cloudy'],
+    },
+    {
+      date: "2021-06-15",
+      location,
+      temperature: '70',
+      format: 'farenheit',
+      forecast: ['thunderstorms'],
     }
-  }
+  ];
+}
 
-  const configuration = new Configuration({
-    apiKey: previewToken || process.env.OPENAI_API_KEY
-  })
+/*
+Example response from the GPT API when calling a function:
+{
+	id: 'chatcmpl-7UQ1NoOnwUnylhvEMpi0JviQcJG23',
+	object: 'chat.completion',
+	created: 1687484221,
+	model: 'gpt-3.5-turbo-0613',
+	choices: [{
+		index: 0,
+		message: {
+			role: 'assistant',
+			content: null,
+			function_call: {
+				name: 'get_current_weather',
+				arguments: '{\n  "location": "Pensacola, FL",\n  "format": "celsius"\n}'
+			}
+		},
+		finish_reason: 'function_call'
+	}],
+	usage: {
+		prompt_tokens: 89,
+		completion_tokens: 29,
+		total_tokens: 118
+	}
+}
+*/
 
+/* Example response from the GPT API when returning a regular message:
+{
+	id: 'chatcmpl-7UQsK6iBHrVAXOXmweDToW0ahv2yB',
+	object: 'chat.completion',
+	created: 1687487504,
+	model: 'gpt-3.5-turbo-0613',
+	choices: [{
+		index: 0,
+		message: {
+			role: 'assistant',
+			content: 'The current weather in Pensacola, FL is 72°F with sunny and windy conditions.'
+		},
+		finish_reason: 'stop'
+	}],
+	usage: {
+		prompt_tokens: 127,
+		completion_tokens: 19,
+		total_tokens: 146
+	}
+}
+*/
+
+// Array of functions that GPT can call
+const functions = [
+  {
+      "name": "get_current_weather",
+      "description": "Get the current weather",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "location": {
+                  "type": "string",
+                  "description": "The city and state, e.g. San Francisco, CA",
+              },
+              "format": {
+                  "type": "string",
+                  "enum": ["celsius", "fahrenheit"],
+                  "description": "The temperature unit to use. Infer this from the users location.",
+              },
+          },
+          "required": ["location", "format"],
+      },
+  },
+  {
+      "name": "get_n_day_weather_forecast",
+      "description": "Get an N-day weather forecast",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "location": {
+                  "type": "string",
+                  "description": "The city and state, e.g. San Francisco, CA",
+              },
+              "format": {
+                  "type": "string",
+                  "enum": ["celsius", "fahrenheit"],
+                  "description": "The temperature unit to use. Infer this from the users location.",
+              },
+              "num_days": {
+                  "type": "integer",
+                  "description": "The number of days to forecast",
+              }
+          },
+          "required": ["location", "format", "num_days"]
+      },
+  },
+  {
+    "name": "get_precipitation_percentage",
+    "description": "Get the next 24 hours of precipitation percentages",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "The city and state, e.g. San Francisco, CA",
+            }
+        },
+        "required": ["location"]
+    },
+  },
+]
+
+export async function POST(req: Request) {
+  const json = await req.json();
+  const { messages } = json;
+
+  return await handleChatCompletion(messages, functions, 'gpt-3.5-turbo-0613', 0);
+}
+
+async function handleChatCompletion(messages: any[], functions: any[], model: string, depth: number): Promise<StreamingTextResponse> {
+  if (depth >= 10) throw new Error('Maximum recursion depth reached');
+
+  const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY })
   const openai = new OpenAIApi(configuration)
 
-  const res = await openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
+  const response = await openai.createChatCompletion({
+    function_call: "auto",
+    functions,
     messages,
-    temperature: 0.7,
-    stream: true
-  })
+    model,
+    stream: false,
+  });
 
-  const stream = OpenAIStream(res, {
-    async onCompletion(completion) {
-      const title = json.messages[0].content.substring(0, 100)
-      const userId = session?.user.id
-      if (userId) {
-        const id = json.id ?? nanoid()
-        const createdAt = Date.now()
-        const path = `/chat/${id}`
-        const payload = {
-          id,
-          title,
-          userId,
-          createdAt,
-          path,
-          messages: [
-            ...messages,
-            {
-              content: completion,
-              role: 'assistant'
-            }
-          ]
-        }
-        await kv.hmset(`chat:${id}`, payload)
-        await kv.zadd(`user:chat:${userId}`, {
-          score: createdAt,
-          member: `chat:${id}`
-        })
-      }
-    }
-  })
+  const result = await response.json();
+  console.log("result", result)
 
-  return new StreamingTextResponse(stream)
+  const { finish_reason, message } = result.choices[0];
+
+  if (finish_reason === 'stop') {
+    return new StreamingTextResponse(message.content);
+  } else if (finish_reason === 'function_call') {
+    const functionResult = callFunction(message.function_call.name, JSON.parse(message.function_call.arguments));
+    const newMessages = [
+      ...messages,
+      {
+        role: 'function',
+        name: message.function_call.name,
+        content: JSON.stringify(functionResult),
+      },
+    ];
+    return handleChatCompletion(newMessages, functions, model, depth + 1);
+  } else {
+    throw new Error(`Unexpected finish_reason: ${finish_reason}`);
+  }
+}
+
+function callFunction(name: string, args: any): any {
+  switch(name) {
+    case "get_current_weather":
+      return get_current_weather(args);
+    case "get_n_day_weather_forecast":
+      return get_n_day_weather_forecast(args);
+    case "get_precipitation_percentage":
+      return get_precipitation_percentage(args);
+    default:
+      throw new Error(`Unexpected function name: ${name}`);
+  }
 }
