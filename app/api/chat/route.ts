@@ -5,14 +5,49 @@ import { Configuration, OpenAIApi } from 'openai-edge'
 export const runtime = 'edge'
 
 // placeholder function for a future API call to get the weather
-function get_current_weather(args: { location: string; unit: string }) {
-  const weather_info = {
-    location: args.location,
+function get_current_weather(args: { location: string; format: string }) {
+  const { location, format } = args;
+  console.log("get_current_weather", location, format);
+
+  const currentWeather = {
+    location,
     temperature: '72',
-    unit: args?.unit || 'fahrenheit',
+    format,
     forecast: ['sunny', 'windy'],
   };
-  return JSON.stringify(weather_info);
+
+  return JSON.stringify({ currentWeather });
+}
+
+function get_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
+  const { location, format, num_days } = args;
+  console.log("get_n_day_weather_forecast", location, format, num_days);
+
+  const weatherForecast = [
+    {
+      date: "2021-06-13",
+      location,
+      temperature: '80',
+      format: 'farenheit',
+      forecast: ['sunny', 'windy'],
+    },
+    {
+      date: "2021-06-14",
+      location,
+      temperature: '65',
+      format: 'farenheit',
+      forecast: ['cloudy'],
+    },
+    {
+      date: "2021-06-15",
+      location,
+      temperature: '70',
+      format: 'farenheit',
+      forecast: ['thunderstorms'],
+    }
+  ];
+
+  return JSON.stringify({ weatherForecast });
 }
 
 /*
@@ -67,24 +102,47 @@ Example response from the GPT API when calling a function:
 // Array of functions that GPT can call
 const functions = [
   {
-    'name': 'get_current_weather',
-    'description': 'Get the current weather',
-    'parameters': {
-      'type': 'object',
-      'properties': {
-        'location': {
-          'type': 'string',
-          'description': 'The city and state, e.g. San Francisco, CA'
-        },
-        'format': {
-          'type': 'string',
-          'enum': ['celsius', 'fahrenheit'],
-          'description': 'The temperature unit to use. Infer this from the users location.'
-        }
+      "name": "get_current_weather",
+      "description": "Get the current weather",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "location": {
+                  "type": "string",
+                  "description": "The city and state, e.g. San Francisco, CA",
+              },
+              "format": {
+                  "type": "string",
+                  "enum": ["celsius", "fahrenheit"],
+                  "description": "The temperature unit to use. Infer this from the users location.",
+              },
+          },
+          "required": ["location", "format"],
       },
-      'required': ['location', 'format']
-    }
-  }
+  },
+  {
+      "name": "get_n_day_weather_forecast",
+      "description": "Get an N-day weather forecast",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "location": {
+                  "type": "string",
+                  "description": "The city and state, e.g. San Francisco, CA",
+              },
+              "format": {
+                  "type": "string",
+                  "enum": ["celsius", "fahrenheit"],
+                  "description": "The temperature unit to use. Infer this from the users location.",
+              },
+              "num_days": {
+                  "type": "integer",
+                  "description": "The number of days to forecast",
+              }
+          },
+          "required": ["location", "format", "num_days"]
+      },
+  },
 ]
 
 export async function POST(req: Request) {
@@ -114,8 +172,8 @@ export async function POST(req: Request) {
     // GPT called a function, so we need to handle it, and give the result back to GPT
     const { name, arguments: args } = message.function_call;
 
-    if (name == "get_current_weather") {
-      const weatherResponse = get_current_weather(JSON.parse(args));
+    if (name == "get_current_weather" || name == "get_n_day_weather_forecast") {
+      const weatherResponse = (name == "get_current_weather") ? get_current_weather(JSON.parse(args)) : get_n_day_weather_forecast(JSON.parse(args));
 
       const secondResponse = await openai.createChatCompletion({
         function_call: "none", // don't call a function, just reply with a typical message
