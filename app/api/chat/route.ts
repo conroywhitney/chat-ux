@@ -2,21 +2,33 @@ import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
-import { auth } from '@/auth'
-import { nanoid } from '@/lib/utils'
-
 export const runtime = 'edge'
+
+const functions = [
+  {
+    'name': 'get_current_weather',
+    'description': 'Get the current weather',
+    'parameters': {
+      'type': 'object',
+      'properties': {
+        'location': {
+          'type': 'string',
+          'description': 'The city and state, e.g. San Francisco, CA'
+        },
+        'format': {
+          'type': 'string',
+          'enum': ['celsius', 'fahrenheit'],
+          'description': 'The temperature unit to use. Infer this from the users location.'
+        }
+      },
+      'required': ['location', 'format']
+    }
+  }
+]
 
 export async function POST(req: Request) {
   const json = await req.json()
   const { messages, previewToken } = json
-  const session = await auth()
-
-  // if (process.env.VERCEL_ENV !== 'preview') {
-  //   if (session == null) {
-  //     return new Response('Unauthorized', { status: 401 })
-  //   }
-  // }
 
   const configuration = new Configuration({
     apiKey: previewToken || process.env.OPENAI_API_KEY
@@ -24,43 +36,21 @@ export async function POST(req: Request) {
 
   const openai = new OpenAIApi(configuration)
 
-  const res = await openai.createChatCompletion({
-    model: 'gpt-3.5-turbo',
+  const response = await openai.createChatCompletion({
+    model: 'gpt-3.5-turbo-0613',
+    stream: false,
     messages,
-    temperature: 0.7,
-    stream: true
-  })
+    functions,
+    function_call: 'auto'
+  });
 
-  const stream = OpenAIStream(res, {
-    async onCompletion(completion) {
-      const title = json.messages[0].content.substring(0, 100)
-      const userId = session?.user.id
-      if (userId) {
-        const id = json.id ?? nanoid()
-        const createdAt = Date.now()
-        const path = `/chat/${id}`
-        const payload = {
-          id,
-          title,
-          userId,
-          createdAt,
-          path,
-          messages: [
-            ...messages,
-            {
-              content: completion,
-              role: 'assistant'
-            }
-          ]
-        }
-        await kv.hmset(`chat:${id}`, payload)
-        await kv.zadd(`user:chat:${userId}`, {
-          score: createdAt,
-          member: `chat:${id}`
-        })
-      }
-    }
-  })
+  const result = await response.json();
+  const data = result.choices[0];
+  const message = data.message;
 
-  return new StreamingTextResponse(stream)
+  if (data.finish_reason == "function_call") {
+    console.log("function all", message.function_call)
+  } else {
+    return new StreamingTextResponse(message.content);
+  }  
 }
