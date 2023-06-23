@@ -4,10 +4,20 @@ import { Configuration, OpenAIApi } from 'openai-edge'
 
 export const runtime = 'edge'
 
+const SYSTEM_PROMPT = `
+The following is a conversation with an AI assistant.
+The assistant has four types of functions it can call:
+ * "fetch_" functions will load external data
+ * "fetch_" functions will prompt the user for additional information
+ * "render_" functions will output a UI component tailored to a specific information view
+ * "set_" functions will update the state of the assistant and/or the system
+When rational, call one of the functions. Otherwise, reply with a normal message.
+`
+
 // placeholder function for a future API call to get the weather
-function get_current_weather(args: { location: string; format: string }) {
+function fetch_current_weather(args: { location: string; format: string }) {
   const { location, format } = args;
-  console.log("get_current_weather", location, format);
+  console.log("fetch_current_weather", location, format);
 
   return {
     location,
@@ -17,9 +27,9 @@ function get_current_weather(args: { location: string; format: string }) {
   };
 }
 
-function get_precipitation_percentage(args: { location: string }) {
+function fetch_precipitation_percentage(args: { location: string }) {
   const { location } = args;
-  console.log("get_precipitation_percentage", location);
+  console.log("fetch_precipitation_percentage", location);
 
   return {
     location,
@@ -27,9 +37,9 @@ function get_precipitation_percentage(args: { location: string }) {
   };
 }
 
-function get_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
+function fetch_n_day_weather_forecast(args: { location: string; format: string, num_days: number }) {
   const { location, format, num_days } = args;
-  console.log("get_n_day_weather_forecast", location, format, num_days);
+  console.log("fetch_n_day_weather_forecast", location, format, num_days);
 
   return [
     {
@@ -69,7 +79,7 @@ Example response from the GPT API when calling a function:
 			role: 'assistant',
 			content: null,
 			function_call: {
-				name: 'get_current_weather',
+				name: 'fetch_current_weather',
 				arguments: '{\n  "location": "Pensacola, FL",\n  "format": "celsius"\n}'
 			}
 		},
@@ -108,8 +118,8 @@ Example response from the GPT API when calling a function:
 // Array of functions that GPT can call
 const functions = [
   {
-      "name": "get_current_weather",
-      "description": "Get the current weather",
+      "name": "fetch_current_weather",
+      "description": "Fetch the current weather",
       "parameters": {
           "type": "object",
           "properties": {
@@ -127,8 +137,8 @@ const functions = [
       },
   },
   {
-      "name": "get_n_day_weather_forecast",
-      "description": "Get an N-day weather forecast",
+      "name": "fetch_n_day_weather_forecast",
+      "description": "Fetch an N-day weather forecast",
       "parameters": {
           "type": "object",
           "properties": {
@@ -150,8 +160,8 @@ const functions = [
       },
   },
   {
-    "name": "get_precipitation_percentage",
-    "description": "Get the next 24 hours of precipitation percentages",
+    "name": "fetch_precipitation_percentage",
+    "description": "Fetch the next 24 hours of precipitation percentages",
     "parameters": {
         "type": "object",
         "properties": {
@@ -163,6 +173,72 @@ const functions = [
         "required": ["location"]
     },
   },
+  {
+    "name": "render_weather",
+    "description": "Show rather than tell. Render weather-related information, including current weather, 5 day forecast, and precipitation using a client-side React component",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "The city and state, e.g. San Francisco, CA"
+        },
+        "current": {
+          "type": "object",
+          "properties": {
+            "temperature": {
+              "type": "string",
+              "description": "The current temperature"
+            },
+            "format": {
+              "type": "string",
+              "enum": ["celsius", "fahrenheit"],
+              "description": "The temperature unit to use."
+            },
+            "forecast": {
+              "type": "string",
+              "description": "The forecast for the rest of the day"
+            }
+          }
+        },
+        "forecast": {
+          "type": "array",
+          "description": "The forecast for the next n days",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "description": "The date of the forecast"
+              },
+              "temperature": {
+                "type": "string",
+                "description": "The temperature"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["celsius", "fahrenheit"],
+                "description": "The temperature unit to use"
+              },
+              "forecast": {
+                "type": "string",
+                "description": "The forecast for the day"
+              }
+            }
+          }
+        },
+        "precipitation": {
+          "type": "array",
+          "description": "The precipitation percentages for the next 24 hours",
+          "items": {
+            "type": "number",
+            "description": "The precipitation percentage"
+          }
+        }
+      },
+      "required": ["location"]
+    }
+  }
 ]
 
 export async function POST(req: Request) {
@@ -181,7 +257,10 @@ async function handleChatCompletion(messages: any[], functions: any[], model: st
   const response = await openai.createChatCompletion({
     function_call: "auto",
     functions,
-    messages,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...messages
+    ],
     model,
     stream: false,
   });
@@ -194,16 +273,22 @@ async function handleChatCompletion(messages: any[], functions: any[], model: st
   if (finish_reason === 'stop') {
     return new StreamingTextResponse(message.content);
   } else if (finish_reason === 'function_call') {
-    const functionResult = callFunction(message.function_call.name, JSON.parse(message.function_call.arguments));
-    const newMessages = [
-      ...messages,
-      {
-        role: 'function',
-        name: message.function_call.name,
-        content: JSON.stringify(functionResult),
-      },
-    ];
-    return handleChatCompletion(newMessages, functions, model, depth + 1);
+    if (message.function_call.name.startsWith('render_')) {
+      console.log("rendering", message);
+      return new StreamingTextResponse(JSON.stringify(message.function_call));
+    } else {
+      const functionResult = callFunction(message.function_call.name, JSON.parse(message.function_call.arguments));
+      const newMessages = [
+        ...messages,
+        {
+          role: 'function',
+          name: message.function_call.name,
+          content: JSON.stringify(functionResult),
+        },
+      ];
+
+      return handleChatCompletion(newMessages, functions, model, depth + 1);
+    }
   } else {
     throw new Error(`Unexpected finish_reason: ${finish_reason}`);
   }
@@ -211,12 +296,12 @@ async function handleChatCompletion(messages: any[], functions: any[], model: st
 
 function callFunction(name: string, args: any): any {
   switch(name) {
-    case "get_current_weather":
-      return get_current_weather(args);
-    case "get_n_day_weather_forecast":
-      return get_n_day_weather_forecast(args);
-    case "get_precipitation_percentage":
-      return get_precipitation_percentage(args);
+    case "fetch_current_weather":
+      return fetch_current_weather(args);
+    case "fetch_n_day_weather_forecast":
+      return fetch_n_day_weather_forecast(args);
+    case "fetch_precipitation_percentage":
+      return fetch_precipitation_percentage(args);
     default:
       throw new Error(`Unexpected function name: ${name}`);
   }
