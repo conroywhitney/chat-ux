@@ -1,40 +1,40 @@
-import { ImageResponse } from 'next/server'
+import { ImageResponse } from "next/server";
 
-import { getSharedChat } from '@/app/actions'
+import { getSharedChat } from "@/app/actions";
 
-export const runtime = 'edge'
+export const runtime = "edge";
 
-export const alt = 'AI Chatbot'
+export const alt = "AI Chatbot";
 
 export const size = {
   width: 1200,
-  height: 630
-}
+  height: 630,
+};
 
-export const contentType = 'image/png'
+export const contentType = "image/png";
 
 const interRegular = fetch(
-  new URL('../../../assets/fonts/Inter-Regular.woff', import.meta.url)
-).then(res => res.arrayBuffer())
+  new URL("../../../assets/fonts/Inter-Regular.woff", import.meta.url)
+).then(res => res.arrayBuffer());
 
 const interBold = fetch(
-  new URL('../../../assets/fonts/Inter-Bold.woff', import.meta.url)
-).then(res => res.arrayBuffer())
+  new URL("../../../assets/fonts/Inter-Bold.woff", import.meta.url)
+).then(res => res.arrayBuffer());
 
 interface ImageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
 export default async function Image({ params }: ImageProps) {
-  const chat = await getSharedChat(params.id)
+  const chat = await getSharedChat(params.id);
 
   if (!chat || !chat?.sharePath) {
-    return null
+    return null;
   }
 
-  const textAlign = chat?.title?.length > 40 ? 'items-start' : 'items-center'
+  const textAlign = chat?.title?.length > 40 ? "items-start" : "items-center";
 
   return new ImageResponse(
     (
@@ -88,7 +88,7 @@ export default async function Image({ params }: ImageProps) {
               <path d="M24 22.525H0l12-21.05 12 21.05z" />
             </svg>
             <div tw="flex text-[1.8rem] ml-4 text-[#9b9ba4]">
-              Built with{' '}
+              Built with{" "}
               <div tw="flex text-[#eaeaf0] ml-2 mr-2">Vercel AI SDK</div> &
               <div tw="flex text-[#eaeaf0] ml-2">KV</div>
             </div>
@@ -103,18 +103,18 @@ export default async function Image({ params }: ImageProps) {
       ...size,
       fonts: [
         {
-          name: 'Inter',
+          name: "Inter",
           data: await interRegular,
-          style: 'normal',
-          weight: 400
+          style: "normal",
+          weight: 400,
         },
         {
-          name: 'Inter',
+          name: "Inter",
           data: await interBold,
-          style: 'normal',
-          weight: 700
-        }
-      ]
+          style: "normal",
+          weight: 700,
+        },
+      ],
     }
-  )
+  );
 }

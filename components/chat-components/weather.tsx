@@ -68,23 +68,23 @@ This component is called by the GPT model to render a weather forecast. It is de
 }
 */
 interface WeatherArgs {
-  location: string
+  location: string;
   current?: {
-    temperature: number
-    format: string
-    forecast: string
-  }
+    temperature: number;
+    format: string;
+    forecast: string;
+  };
   forecast?: {
-    date: string
-    temperature: number
-    format: string
-    forecast: string
-  }[]
-  precipitation?: number[]
+    date: string;
+    temperature: number;
+    format: string;
+    forecast: string;
+  }[];
+  precipitation?: number[];
 }
 
 export default function Weather(args: WeatherArgs): JSX.Element {
-  const { location, current, forecast, precipitation } = args
+  const { location, current, forecast, precipitation } = args;
 
   return (
     <>
@@ -105,10 +105,10 @@ export default function Weather(args: WeatherArgs): JSX.Element {
             {forecast.map(
               (
                 day: {
-                  date: string
-                  temperature: number
-                  format: string
-                  forecast: string
+                  date: string;
+                  temperature: number;
+                  format: string;
+                  forecast: string;
                 },
                 index: number
               ) => (
@@ -140,5 +140,5 @@ export default function Weather(args: WeatherArgs): JSX.Element {
         )}
       </div>
     </>
-  )
+  );
 }
