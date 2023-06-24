@@ -3,6 +3,10 @@ import { type Message } from 'ai'
 import { Separator } from '@/components/ui/separator'
 import { ChatMessage } from '@/components/chat-message'
 
+interface ComponentArgs {
+  [key: string]: any
+}
+
 export interface ChatList {
   messages: Message[]
 }
@@ -12,13 +16,15 @@ const renderComponent = ({
   arguments: args
 }: {
   name: string
-  arguments: object
+  arguments: string
 }) => {
   const componentName = name.replace('render_', '')
   const Component =
     require(`@/components/chat-components/${componentName}`).default
 
-  return <Component {...JSON.parse(args)} />
+  const componentArgs: ComponentArgs = JSON.parse(args)
+
+  return <Component {...componentArgs} />
 }
 
 const renderMessage = (message: Message, index: number) => {
