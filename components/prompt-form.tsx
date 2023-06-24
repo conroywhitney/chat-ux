@@ -1,48 +1,48 @@
-import * as React from 'react'
-import Link from 'next/link'
-import Textarea from 'react-textarea-autosize'
-import { UseChatHelpers } from 'ai/react'
+import * as React from "react";
+import Link from "next/link";
+import Textarea from "react-textarea-autosize";
+import { UseChatHelpers } from "ai/react";
 
-import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
-import { cn } from '@/lib/utils'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
-import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { IconArrowElbow, IconPlus } from "@/components/ui/icons";
 
 export interface PromptProps
-  extends Pick<UseChatHelpers, 'input' | 'setInput'> {
-  onSubmit: (value: string) => void
-  isLoading: boolean
+  extends Pick<UseChatHelpers, "input" | "setInput"> {
+  onSubmit: (value: string) => void;
+  isLoading: boolean;
 }
 
 export function PromptForm({
   onSubmit,
   input,
   setInput,
-  isLoading
+  isLoading,
 }: PromptProps) {
-  const { formRef, onKeyDown } = useEnterSubmit()
-  const inputRef = React.useRef<HTMLTextAreaElement>(null)
+  const { formRef, onKeyDown } = useEnterSubmit();
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
 
   React.useEffect(() => {
     if (inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.focus();
     }
-  }, [])
+  }, []);
 
   return (
     <form
       onSubmit={async e => {
-        e.preventDefault()
-        if (input === '') {
-          return
+        e.preventDefault();
+        if (input === "") {
+          return;
         }
-        setInput('')
-        await onSubmit(input)
+        setInput("");
+        await onSubmit(input);
       }}
       ref={formRef}
     >
@@ -52,8 +52,8 @@ export function PromptForm({
             <Link
               href="/"
               className={cn(
-                buttonVariants({ size: 'sm', variant: 'outline' }),
-                'absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4'
+                buttonVariants({ size: "sm", variant: "outline" }),
+                "absolute left-0 top-4 h-8 w-8 rounded-full bg-background p-0 sm:left-4"
               )}
             >
               <IconPlus />
@@ -79,7 +79,7 @@ export function PromptForm({
               <Button
                 type="submit"
                 size="icon"
-                disabled={isLoading || input === ''}
+                disabled={isLoading || input === ""}
               >
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
@@ -90,5 +90,5 @@ export function PromptForm({
         </div>
       </div>
     </form>
-  )
+  );
 }

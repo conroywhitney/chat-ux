@@ -1,34 +1,34 @@
-import { type Message } from 'ai'
+import { type Message } from "ai";
 
-import { Separator } from '@/components/ui/separator'
-import { ChatMessage } from '@/components/chat-message'
+import { Separator } from "@/components/ui/separator";
+import { ChatMessage } from "@/components/chat-message";
 
 interface ComponentArgs {
-  [key: string]: any
+  [key: string]: any;
 }
 
 export interface ChatList {
-  messages: Message[]
+  messages: Message[];
 }
 
 const renderComponent = ({
   name,
-  arguments: args
+  arguments: args,
 }: {
-  name: string
-  arguments: string
+  name: string;
+  arguments: string;
 }) => {
-  const componentName = name.replace('render_', '')
+  const componentName = name.replace("render_", "");
   const Component =
-    require(`@/components/chat-components/${componentName}`).default
+    require(`@/components/chat-components/${componentName}`).default;
 
-  const componentArgs: ComponentArgs = JSON.parse(args)
+  const componentArgs: ComponentArgs = JSON.parse(args);
 
-  return <Component {...componentArgs} />
-}
+  return <Component {...componentArgs} />;
+};
 
 const renderMessage = (message: Message, index: number) => {
-  const isComponent = message.content.includes('render_')
+  const isComponent = message.content.includes("render_");
 
   return (
     <div key={index}>
@@ -36,15 +36,15 @@ const renderMessage = (message: Message, index: number) => {
       {!isComponent && <ChatMessage message={message} />}
       <Separator className="my-4 md:my-8" />
     </div>
-  )
-}
+  );
+};
 
 export function ChatList({ messages }: ChatList) {
-  if (!messages.length) return null
+  if (!messages.length) return null;
 
   return (
     <div className="relative mx-auto max-w-2xl px-4">
       {messages.map(renderMessage)}
     </div>
-  )
+  );
 }
