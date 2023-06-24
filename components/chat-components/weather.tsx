@@ -1,4 +1,3 @@
-
 /*
 This component is called by the GPT model to render a weather forecast. It is defined by this JSON structure:
 {
@@ -69,23 +68,23 @@ This component is called by the GPT model to render a weather forecast. It is de
 }
 */
 interface WeatherArgs {
-  location: string;
+  location: string
   current?: {
-    temperature: number;
-    format: string;
-    forecast: string;
-  };
+    temperature: number
+    format: string
+    forecast: string
+  }
   forecast?: {
-    date: string;
-    temperature: number;
-    format: string;
-    forecast: string;
-  }[];
-  precipitation?: number[];
+    date: string
+    temperature: number
+    format: string
+    forecast: string
+  }[]
+  precipitation?: number[]
 }
 
 export default function Weather(args: WeatherArgs): JSX.Element {
-  const { location, current, forecast, precipitation } = args;
+  const { location, current, forecast, precipitation } = args
 
   return (
     <>
@@ -103,21 +102,37 @@ export default function Weather(args: WeatherArgs): JSX.Element {
         </div>
         {forecast && (
           <div className="flex flex-row items-center justify-center">
-            {forecast.map((day: { date: string; temperature: number; format: string; forecast: string }, index: number) => (
-              <div key={`forecast-${index}`} className="flex flex-col items-center justify-center">
-                <h3 className="text-lg font-semibold">{day.date}</h3>
-                <h3 className="text-lg font-semibold">
-                  {day.temperature} {day.format}
-                </h3>
-                <h3 className="text-lg font-semibold">{day.forecast}</h3>
-              </div>
-            ))}
+            {forecast.map(
+              (
+                day: {
+                  date: string
+                  temperature: number
+                  format: string
+                  forecast: string
+                },
+                index: number
+              ) => (
+                <div
+                  key={`forecast-${index}`}
+                  className="flex flex-col items-center justify-center"
+                >
+                  <h3 className="text-lg font-semibold">{day.date}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {day.temperature} {day.format}
+                  </h3>
+                  <h3 className="text-lg font-semibold">{day.forecast}</h3>
+                </div>
+              )
+            )}
           </div>
         )}
         {precipitation && (
           <div className="flex flex-row items-center justify-center">
             {precipitation.map((percent: number, index: number) => (
-              <div key={`percent-${index}`} className="flex flex-col items-center justify-center">
+              <div
+                key={`percent-${index}`}
+                className="flex flex-col items-center justify-center"
+              >
                 <h3 className="text-lg font-semibold">{percent}%</h3>
               </div>
             ))}
@@ -125,5 +140,5 @@ export default function Weather(args: WeatherArgs): JSX.Element {
         )}
       </div>
     </>
-  );
+  )
 }

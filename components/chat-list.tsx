@@ -7,15 +7,22 @@ export interface ChatList {
   messages: Message[]
 }
 
-const renderComponent = ({ name, arguments: args }: { name: string, arguments: object }) => {
-  const componentName = name.replace("render_", "");
-  const Component = require(`@/components/chat-components/${componentName}`).default;
+const renderComponent = ({
+  name,
+  arguments: args
+}: {
+  name: string
+  arguments: object
+}) => {
+  const componentName = name.replace('render_', '')
+  const Component =
+    require(`@/components/chat-components/${componentName}`).default
 
   return <Component {...JSON.parse(args)} />
 }
 
 const renderMessage = (message: Message, index: number) => {
-  const isComponent = message.content.includes("render_");
+  const isComponent = message.content.includes('render_')
 
   return (
     <div key={index}>
@@ -27,7 +34,7 @@ const renderMessage = (message: Message, index: number) => {
 }
 
 export function ChatList({ messages }: ChatList) {
-  if (!messages.length) return null;
+  if (!messages.length) return null
 
   return (
     <div className="relative mx-auto max-w-2xl px-4">
