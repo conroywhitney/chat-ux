@@ -1,3 +1,5 @@
+"use client";
+
 /*
 This component is called by the GPT model to render a weather forecast. It is defined by this JSON structure:
 {
