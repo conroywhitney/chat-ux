@@ -18,13 +18,19 @@ const renderComponent = ({
   name: string;
   arguments: string;
 }) => {
-  const componentName = name.replace("render_", "");
-  const Component =
-    require(`@/components/chat-components/${componentName}`).default;
+  if (name == "render_multiple") {
+    const { children } = JSON.parse(args);
 
-  const componentArgs: ComponentArgs = JSON.parse(args);
+    return <>{children.map(renderComponent)}</>;
+  } else {
+    const componentName = name.replace("render_", "");
+    const Component =
+      require(`@/components/chat-components/${componentName}`).default;
 
-  return <Component {...componentArgs} />;
+    const componentArgs: ComponentArgs = JSON.parse(args);
+
+    return <Component {...componentArgs} />;
+  }
 };
 
 const renderMessage = (message: Message, index: number) => {

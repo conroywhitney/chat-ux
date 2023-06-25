@@ -257,24 +257,65 @@ const functions = [
       properties: {
         color: {
           type: "string",
-          enum: ["default", "accent", "error", "ghost", "info", "primary", "secondary", "success", "warning"],
-          description: "The theme indicator to use based on usage and/or severity.",
+          enum: [
+            "default",
+            "accent",
+            "error",
+            "ghost",
+            "info",
+            "primary",
+            "secondary",
+            "success",
+            "warning",
+          ],
+          description:
+            "The theme indicator to use based on usage and/or severity.",
         },
         id: {
           type: "string",
-          description: "A unique identifier that will let you match a return value back to this exact rendering."
+          description:
+            "A unique identifier that will let you match a return value back to this exact rendering.",
         },
         label: {
           type: "string",
-          description: "The text value to show on the Button."
+          description: "The text value to show on the Button.",
         },
         value: {
           type: "string",
-          description: "What to return if/when the button is clicked. When paired with the id parameter."
-        }
-      }
-    }
-  }
+          description:
+            "What to return if/when the button is clicked. When paired with the id parameter.",
+        },
+      },
+    },
+  },
+  {
+    name: "render_multiple",
+    description:
+      "Render multiple components at the same time, as defined in the other available render_* functions.",
+    parameters: {
+      type: "object",
+      properties: {
+        children: {
+          type: "array",
+          description: "The list of child components to render.",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["render_button", "render_weather"],
+                description: "The name of the function to call.",
+              },
+              arguments: {
+                type: "string",
+                description: "The arguments to pass to the function.",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 ];
 
 export async function POST(req: Request) {

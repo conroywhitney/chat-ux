@@ -1,4 +1,4 @@
-import { Button as DaisyButton } from 'react-daisyui'
+import { Button as DaisyButton } from "react-daisyui";
 
 /*
 This component is called by the GPT model to render a Button component. It is defined by this JSON structure:
@@ -30,17 +30,30 @@ This component is called by the GPT model to render a Button component. It is de
 }
 */
 interface ButtonArgs {
-  color: "primary" | "secondary" | "accent" | "ghost" | "info" | "success" | "warning" | "error" | undefined,
-  id: string,
-  label: string,
-  value: string,
+  color:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "ghost"
+    | "info"
+    | "success"
+    | "warning"
+    | "error"
+    | undefined;
+  id: string;
+  label: string;
+  value: string;
 }
 
 export default function Button(args: ButtonArgs): JSX.Element {
   const { color, id, label, value } = args;
 
   return (
-    <DaisyButton color={color} id={id} onClick={() => console.log(value)}>
+    <DaisyButton
+      color={color}
+      id={id}
+      onClick={() => console.log(value)}
+    >
       {label}
     </DaisyButton>
   );
