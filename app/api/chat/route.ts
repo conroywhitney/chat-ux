@@ -290,9 +290,9 @@ const functions = [
     },
   },
   {
-    name: "render_multiple",
+    name: "render_flexbox",
     description:
-      "Render multiple components at the same time, as defined in the other available render_* functions.",
+      "Render multiple components at the same time using CSS flexbox, as defined in the other available render_* functions. Can also render child flexboxes.",
     parameters: {
       type: "object",
       properties: {
@@ -309,7 +309,7 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_button", "render_weather"],
+                enum: ["render_button", "render_flexbox", "render_weather"],
                 description: "The name of the function to call.",
               },
               arguments: {
@@ -343,7 +343,7 @@ export async function POST(req: Request) {
   return await handleChatCompletion(
     messages,
     functions,
-    "gpt-3.5-turbo-0613",
+    "gpt-4-0613",
     0
   );
 }
