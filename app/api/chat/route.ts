@@ -249,6 +249,32 @@ const functions = [
       required: ["location"],
     },
   },
+  {
+    name: "render_button",
+    description: "Render a ReactJS/Tailwind/DaisyUI Button component",
+    parameters: {
+      type: "object",
+      properties: {
+        color: {
+          type: "string",
+          enum: ["default", "accent", "error", "ghost", "info", "primary", "secondary", "success", "warning"],
+          description: "The theme indicator to use based on usage and/or severity.",
+        },
+        id: {
+          type: "string",
+          description: "A unique identifier that will let you match a return value back to this exact rendering."
+        },
+        label: {
+          type: "string",
+          description: "The text value to show on the Button."
+        },
+        value: {
+          type: "string",
+          description: "What to return if/when the button is clicked. When paired with the id parameter."
+        }
+      }
+    }
+  }
 ];
 
 export async function POST(req: Request) {
