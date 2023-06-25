@@ -352,17 +352,18 @@ const functions = [
   },
   {
     name: "render_plain_text",
-    description: "Render a ReactJS/Tailwind/DaisyUI PlainText chat bubble component",
+    description:
+      "Render a ReactJS/Tailwind/DaisyUI PlainText chat bubble component",
     parameters: {
       type: "object",
       properties: {
         value: {
           type: "string",
-          description: "The content of the plaintext chat message."
-        }
-      }
-    }
-  }
+          description: "The content of the plaintext chat message.",
+        },
+      },
+    },
+  },
 ];
 
 export async function POST(req: Request) {

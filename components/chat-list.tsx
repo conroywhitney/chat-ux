@@ -27,7 +27,9 @@ const renderComponent = ({
 
       return (
         <div
-          className={`flex ${alignItems || "items-start"} ${flexDirection || "flex-col"} ${justifyContent || "justify-start"} w-3/4 py-4 me-2`}
+          className={`flex ${alignItems || "items-start"} ${
+            flexDirection || "flex-col"
+          } ${justifyContent || "justify-start"} me-2 w-3/4 py-4`}
         >
           {children.map(renderComponent)}
         </div>
@@ -52,9 +54,17 @@ const renderMessage = (message: Message, index: number) => {
   const isComponent = content.includes("render_");
 
   return (
-    <div key={index} className="py-4">
+    <div
+      key={index}
+      className="py-4"
+    >
       {isComponent && renderComponent(JSON.parse(content))}
-      {!isComponent && <PlainText value={content} user={role == "user"} />}
+      {!isComponent && (
+        <PlainText
+          value={content}
+          user={role == "user"}
+        />
+      )}
     </div>
   );
 };

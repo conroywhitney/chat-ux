@@ -28,9 +28,7 @@ export default function PlainText(args: PlainTextArgs): JSX.Element {
 
   return (
     <ChatBubble end={user}>
-      <ChatBubble.Message>
-        {value}
-      </ChatBubble.Message>
+      <ChatBubble.Message>{value}</ChatBubble.Message>
     </ChatBubble>
   );
 }
