@@ -22,10 +22,13 @@ const renderComponent = ({
 }) => {
   try {
     if (name == "render_flexbox") {
-      const { alignItems, children, flexDirection, justifyContent } = JSON.parse(args);
+      const { alignItems, children, flexDirection, justifyContent } =
+        JSON.parse(args);
 
       return (
-        <div className={`flex ${alignItems} ${flexDirection} ${justifyContent}`}>
+        <div
+          className={`flex ${alignItems} ${flexDirection} ${justifyContent}`}
+        >
           {children.map(renderComponent)}
         </div>
       );

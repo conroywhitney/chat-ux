@@ -298,7 +298,13 @@ const functions = [
       properties: {
         alignItems: {
           type: "string",
-          enum: ["items-start", "items-end", "items-center", "items-baseline", "items-stretch"],
+          enum: [
+            "items-start",
+            "items-end",
+            "items-center",
+            "items-baseline",
+            "items-stretch",
+          ],
           description: "The CSS flexbox align-items to use.",
         },
         children: {
@@ -323,11 +329,20 @@ const functions = [
         flexDirection: {
           type: "string",
           enum: ["flex-col", "flex-row"],
-          description: "The CSS flexbox direction to use."
+          description: "The CSS flexbox direction to use.",
         },
         justifyContent: {
           type: "string",
-          enum: ["justify-normal", "justify-start", "justify-end", "justify-center", "justify-between", "justify-around", "justify-evenly", "justify-stretch"],
+          enum: [
+            "justify-normal",
+            "justify-start",
+            "justify-end",
+            "justify-center",
+            "justify-between",
+            "justify-around",
+            "justify-evenly",
+            "justify-stretch",
+          ],
           description: "The CSS flexbox justify-content to use.",
         },
       },
@@ -340,12 +355,7 @@ export async function POST(req: Request) {
   const json = await req.json();
   const { messages } = json;
 
-  return await handleChatCompletion(
-    messages,
-    functions,
-    "gpt-4-0613",
-    0
-  );
+  return await handleChatCompletion(messages, functions, "gpt-4-0613", 0);
 }
 
 async function handleChatCompletion(
