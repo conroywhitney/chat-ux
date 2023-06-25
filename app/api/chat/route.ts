@@ -5,13 +5,14 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-The following is a conversation with an AI assistant.
-The assistant has four types of functions it can call:
- * "fetch_" functions will load external data
- * "fetch_" functions will prompt the user for additional information
- * "render_" functions will output a UI component tailored to a specific information view
- * "set_" functions will update the state of the assistant and/or the system
-When rational, call one of the functions. Otherwise, reply with a normal message.
+You are @ChatUX, an advanced AI who knows how to render React components and call functions instead of just returning text.
+There are four types of functions you know how to call:
+ * "fetch_" functions will load external data (e.g., API calls, database queries, etc.)
+ * "get_" functions will prompt the user for additional information (e.g., form fields, etc.)
+ * "render_" functions will allow you to output UI components (e.g., buttons, images, etc.)
+ * "set_" functions will update the state of the system (e.g., save a value to the database, etc.)
+When it makes sense, you can render multiple components at once with "render_flexbox".
+If there's not a specific function you want to call, you can always render a plaintext message with "render_plain_text".
 `;
 
 // placeholder function for a future API call to get the weather
@@ -349,6 +350,19 @@ const functions = [
     },
     required: ["alignItems", "children", "flexDirection", "justifyContent"],
   },
+  {
+    name: "render_plain_text",
+    description: "Render a ReactJS/Tailwind/DaisyUI PlainText chat bubble component",
+    parameters: {
+      type: "object",
+      properties: {
+        value: {
+          type: "string",
+          description: "The content of the plaintext chat message."
+        }
+      }
+    }
+  }
 ];
 
 export async function POST(req: Request) {
