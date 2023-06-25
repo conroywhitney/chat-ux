@@ -271,7 +271,7 @@ const functions = [
           description:
             "The theme indicator to use based on usage and/or severity.",
         },
-        id: {
+        key: {
           type: "string",
           description:
             "A unique identifier that will let you match a return value back to this exact rendering.",
@@ -286,6 +286,7 @@ const functions = [
             "What to return if/when the button is clicked. When paired with the id parameter.",
         },
       },
+      required: ["color", "key", "label", "value"],
     },
   },
   {
@@ -295,6 +296,11 @@ const functions = [
     parameters: {
       type: "object",
       properties: {
+        alignItems: {
+          type: "string",
+          enum: ["items-start", "items-end", "items-center", "items-baseline", "items-stretch"],
+          description: "The CSS flexbox align-items to use.",
+        },
         children: {
           type: "array",
           description: "The list of child components to render.",
@@ -311,10 +317,22 @@ const functions = [
                 description: "The arguments to pass to the function.",
               },
             },
+            required: ["name", "arguments"],
           },
+        },
+        flexDirection: {
+          type: "string",
+          enum: ["flex-col", "flex-row"],
+          description: "The CSS flexbox direction to use."
+        },
+        justifyContent: {
+          type: "string",
+          enum: ["justify-normal", "justify-start", "justify-end", "justify-center", "justify-between", "justify-around", "justify-evenly", "justify-stretch"],
+          description: "The CSS flexbox justify-content to use.",
         },
       },
     },
+    required: ["alignItems", "children", "flexDirection", "justifyContent"],
   },
 ];
 

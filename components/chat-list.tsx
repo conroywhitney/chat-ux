@@ -19,9 +19,13 @@ const renderComponent = ({
   arguments: string;
 }) => {
   if (name == "render_multiple") {
-    const { children } = JSON.parse(args);
+    const { alignItems, children, flexDirection, justifyContent } = JSON.parse(args);
 
-    return <>{children.map(renderComponent)}</>;
+    return (
+      <div className={`flex ${alignItems} ${flexDirection} ${justifyContent}`}>
+        {children.map(renderComponent)}
+      </div>
+    );
   } else {
     const componentName = name.replace("render_", "");
     const Component =

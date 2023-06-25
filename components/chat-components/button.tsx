@@ -40,18 +40,18 @@ interface ButtonArgs {
     | "warning"
     | "error"
     | undefined;
-  id: string;
+  key: string;
   label: string;
   value: string;
 }
 
 export default function Button(args: ButtonArgs): JSX.Element {
-  const { color, id, label, value } = args;
+  const { color, key, label, value } = args;
 
   return (
     <DaisyButton
       color={color}
-      id={id}
+      key={key}
       onClick={() => console.log(value)}
     >
       {label}
