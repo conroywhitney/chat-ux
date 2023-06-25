@@ -3,7 +3,12 @@ const { fontFamily } = require('tailwindcss/defaultTheme')
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
+  content: [
+    'app/**/*.{ts,tsx}',
+    'components/**/*.{ts,tsx}',
+    'node_modules/daisyui/dist/**/*.js',
+    'node_modules/react-daisyui/dist/**/*.js',
+  ],
   theme: {
     container: {
       center: true,
@@ -95,5 +100,9 @@ module.exports = {
       }
     }
   },
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')]
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    require("daisyui")
+  ],
 }

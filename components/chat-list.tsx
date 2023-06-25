@@ -1,3 +1,5 @@
+"use client";
+
 import { type Message } from "ai";
 
 import { Separator } from "@/components/ui/separator";
@@ -18,13 +20,31 @@ const renderComponent = ({
   name: string;
   arguments: string;
 }) => {
-  const componentName = name.replace("render_", "");
-  const Component =
-    require(`@/components/chat-components/${componentName}`).default;
+  try {
+    if (name == "render_flexbox") {
+      const { alignItems, children, flexDirection, justifyContent } =
+        JSON.parse(args);
 
-  const componentArgs: ComponentArgs = JSON.parse(args);
+      return (
+        <div
+          className={`flex ${alignItems} ${flexDirection} ${justifyContent}`}
+        >
+          {children.map(renderComponent)}
+        </div>
+      );
+    } else {
+      const componentName = name.replace("render_", "");
+      const Component =
+        require(`@/components/chat-components/${componentName}`).default;
 
-  return <Component {...componentArgs} />;
+      const componentArgs: ComponentArgs = JSON.parse(args);
+
+      return <Component {...componentArgs} />;
+    }
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
 };
 
 const renderMessage = (message: Message, index: number) => {

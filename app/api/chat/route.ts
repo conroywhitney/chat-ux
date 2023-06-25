@@ -249,18 +249,113 @@ const functions = [
       required: ["location"],
     },
   },
+  {
+    name: "render_button",
+    description: "Render a ReactJS/Tailwind/DaisyUI Button component",
+    parameters: {
+      type: "object",
+      properties: {
+        color: {
+          type: "string",
+          enum: [
+            "default",
+            "accent",
+            "error",
+            "ghost",
+            "info",
+            "primary",
+            "secondary",
+            "success",
+            "warning",
+          ],
+          description:
+            "The theme indicator to use based on usage and/or severity.",
+        },
+        key: {
+          type: "string",
+          description:
+            "A unique identifier that will let you match a return value back to this exact rendering.",
+        },
+        label: {
+          type: "string",
+          description: "The text value to show on the Button.",
+        },
+        value: {
+          type: "string",
+          description:
+            "What to return if/when the button is clicked. When paired with the id parameter.",
+        },
+      },
+      required: ["color", "key", "label", "value"],
+    },
+  },
+  {
+    name: "render_flexbox",
+    description:
+      "Render multiple components at the same time using CSS flexbox, as defined in the other available render_* functions. Can also render child flexboxes.",
+    parameters: {
+      type: "object",
+      properties: {
+        alignItems: {
+          type: "string",
+          enum: [
+            "items-start",
+            "items-end",
+            "items-center",
+            "items-baseline",
+            "items-stretch",
+          ],
+          description: "The CSS flexbox align-items to use.",
+        },
+        children: {
+          type: "array",
+          description: "The list of child components to render.",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["render_button", "render_flexbox", "render_weather"],
+                description: "The name of the function to call.",
+              },
+              arguments: {
+                type: "string",
+                description: "The arguments to pass to the function.",
+              },
+            },
+            required: ["name", "arguments"],
+          },
+        },
+        flexDirection: {
+          type: "string",
+          enum: ["flex-col", "flex-row"],
+          description: "The CSS flexbox direction to use.",
+        },
+        justifyContent: {
+          type: "string",
+          enum: [
+            "justify-normal",
+            "justify-start",
+            "justify-end",
+            "justify-center",
+            "justify-between",
+            "justify-around",
+            "justify-evenly",
+            "justify-stretch",
+          ],
+          description: "The CSS flexbox justify-content to use.",
+        },
+      },
+    },
+    required: ["alignItems", "children", "flexDirection", "justifyContent"],
+  },
 ];
 
 export async function POST(req: Request) {
   const json = await req.json();
   const { messages } = json;
 
-  return await handleChatCompletion(
-    messages,
-    functions,
-    "gpt-3.5-turbo-0613",
-    0
-  );
+  return await handleChatCompletion(messages, functions, "gpt-4-0613", 0);
 }
 
 async function handleChatCompletion(
