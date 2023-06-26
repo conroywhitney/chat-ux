@@ -115,7 +115,7 @@ export default function Form({
             return (
               <div
                 key={element.id}
-                className="form-control w-full max-w-xs"
+                className="form-control w-full"
               >
                 <label
                   htmlFor={element.id}
@@ -127,7 +127,7 @@ export default function Form({
                   type="text"
                   id={element.id}
                   name={element.id}
-                  className="input-bordered input w-full max-w-xs"
+                  className="input-bordered input w-full"
                 />
               </div>
             );
@@ -153,7 +153,7 @@ export default function Form({
             return (
               <div
                 key={element.id}
-                className="form-control w-full max-w-xs"
+                className="form-control w-full"
               >
                 <label
                   className="label"
@@ -187,56 +187,72 @@ export default function Form({
             return (
               <div
                 key={element.id}
-                className="form-control"
+                className="form-control w-full"
               >
-                {element.options.map(option => {
-                  const elementId = [element.id, option.value].join("-");
+                <label
+                  className="label"
+                  htmlFor={element.id}
+                >
+                  <span className="label-text">{element.label}</span>
+                </label>
+                <div className="rounded-lg bg-base-200 p-4 shadow">
+                  {element.options.map(option => {
+                    const elementId = [element.id, option.value].join("-");
 
-                  return (
-                    <label
-                      htmlFor={elementId}
-                      key={elementId}
-                      className="label flex w-full cursor-pointer"
-                    >
-                      <input
-                        className="checkbox flex-none"
-                        id={elementId}
-                        name={elementId}
-                        type="checkbox"
-                        value={option.label}
-                      />
-                      <span className="label-text ml-4 flex-1">
-                        {option.label}
-                      </span>
-                    </label>
-                  );
-                })}
+                    return (
+                      <label
+                        htmlFor={elementId}
+                        key={elementId}
+                        className="label flex w-full cursor-pointer"
+                      >
+                        <input
+                          className="checkbox flex-none"
+                          id={elementId}
+                          name={elementId}
+                          type="checkbox"
+                          value={option.label}
+                        />
+                        <span className="label-text ml-4 flex-1">
+                          {option.label}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             );
           case "radio":
             return (
               <div
                 key={element.id}
-                className="form-control flex w-full flex-col rounded-lg bg-base-200 p-4 shadow"
+                className="form-control w-full"
               >
-                {element.options.map(option => {
-                  const optionId = [element.id, option.value].join("-");
+                <label
+                  className="label"
+                  htmlFor={element.id}
+                >
+                  <span className="label-text">{element.label}</span>
+                </label>
+                <div className="rounded-lg bg-base-200 p-4 shadow">
+                  {element.options.map(option => {
+                    const optionId = [element.id, option.value].join("-");
 
-                  return (
-                    <DaisyForm.Label
-                      className="flex-1"
-                      key={optionId}
-                      title={option.label}
-                    >
-                      <DaisyRadio
-                        className="ml-4"
-                        id={optionId}
-                        name={element.id}
-                        value={option.value}
-                      />
-                    </DaisyForm.Label>
-                  );
-                })}
+                    return (
+                      <DaisyForm.Label
+                        className="flex-1"
+                        key={optionId}
+                        title={option.label}
+                      >
+                        <DaisyRadio
+                          className="ml-4"
+                          id={optionId}
+                          name={element.id}
+                          value={option.value}
+                        />
+                      </DaisyForm.Label>
+                    );
+                  })}
+                </div>
               </div>
             );
           default:
