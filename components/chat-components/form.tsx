@@ -23,31 +23,41 @@ type FormProps = {
 This component is called by the GPT model to render a Form component with one or more inputs. It is defined by this JSON structure:
 {
   name: "render_form",
-  description: "Render a ReactJS/Tailwind/DaisyUI Form component to get one or more pieces of information from a user.",
+  description:
+    "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
   parameters: {
     type: "object",
     properties: {
       id: {
         type: "string",
-        description: "A unique identifier that will let you match a return value back to this exact rendering."
+        description:
+          "A unique identifier to match the return value to this form.",
       },
       elements: {
         type: "array",
-        description: "The list of child form elements to render.",
+        description:
+          "Form elements to render, including inputs, textareas, checkboxes, radios, select dropdowns, and more.",
         items: {
           type: "object",
           properties: {
             id: {
               type: "string",
-              description: "A unique identifier that will let you match a return value back to this specific form element.",
+              description:
+                "Unique ID to match return value to this form element.",
             },
             label: {
               type: "string",
-              description: "The label text to display for the form element.",
+              description: "Label displayed for this form element.",
+            },
+            type: {
+              type: "string",
+              enum: ["input", "textarea", "select", "checkbox", "radio"],
+              description: "Type of the form element.",
             },
             options: {
               type: "array",
-              description: "The list of options to display for a select element.",
+              description:
+                "(Optional) For select type, the options available to select.",
               items: {
                 type: "object",
                 properties: {
@@ -57,27 +67,23 @@ This component is called by the GPT model to render a Form component with one or
                   },
                   value: {
                     type: "string",
-                    description: "The value to return if this option is selected.",
+                    description:
+                      "The value to return if this option is selected.",
                   },
                 },
                 required: ["label", "value"],
               },
             },
-            type: {
-              type: "string",
-              enum: ["input", "textarea", "select", "checkbox", "radio", "button"],
-              description: "The type of form element to render.",
-            }
           },
           required: ["id", "label", "type"],
         },
       },
       submitLabel: {
         type: "string",
-        description: "The text for the form's submit button."
+        description: "Text to display on the form's submit button.",
       },
-    }
-  }
+    },
+  },
 }
 */
 export default function Form({

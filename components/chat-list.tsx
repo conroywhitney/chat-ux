@@ -19,11 +19,13 @@ export interface ChatList {
 const renderComponent = ({
   name,
   arguments: args,
+  handleClick,
   handleSubmit,
 }: {
   name: string;
   arguments: string;
-  handleSubmit: (value: any) => void;
+  handleClick: ({ id, value }: { id: string; value: string }) => void;
+  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) => {
   try {
     if (name == "render_response") {
@@ -32,7 +34,7 @@ const renderComponent = ({
       return (
         <div className="me-2 flex w-3/4 flex-col items-start justify-start space-y-4 py-4">
           {elements.map((element: any) =>
-            renderComponent({ ...element, handleSubmit })
+            renderComponent({ ...element, handleClick, handleSubmit })
           )}
         </div>
       );
@@ -45,6 +47,7 @@ const renderComponent = ({
       return (
         <Component
           {...componentArgs}
+          onClick={handleClick}
           onSubmit={handleSubmit}
         />
       );
@@ -57,7 +60,8 @@ const renderComponent = ({
 
 const renderMessage = (
   message: Message,
-  handleSubmit: (value: any) => void
+  handleClick: ({ id, value }: { id: string; value: string }) => void,
+  handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 ) => {
   const { content, role } = message;
   const isComponent = content.includes("render_");
@@ -67,7 +71,8 @@ const renderMessage = (
       key={message.id}
       className="py-4"
     >
-      {isComponent && renderComponent({ ...JSON.parse(content), handleSubmit })}
+      {isComponent &&
+        renderComponent({ ...JSON.parse(content), handleClick, handleSubmit })}
       {!isComponent && (
         <ChatBubble
           value={content}
@@ -96,11 +101,27 @@ export function ChatList({ append, messages }: ChatList) {
     [append]
   );
 
+  const handleClick = useCallback(
+    ({ id, value }: { id: string; value: string }) => {
+      console.log("handleClick", id, value);
+      if (append) {
+        append({
+          id: nanoid(),
+          content: JSON.stringify({ id, value }),
+          role: "user",
+        });
+      }
+    },
+    [append]
+  );
+
   if (!messages.length) return null;
 
   return (
     <div className="relative mx-auto max-w-2xl px-4">
-      {messages.map(message => renderMessage(message, handleSubmit))}
+      {messages.map(message =>
+        renderMessage(message, handleClick, handleSubmit)
+      )}
     </div>
   );
 }
