@@ -16,6 +16,7 @@ type FormElement =
 type FormProps = {
   elements: FormElement[];
   submitLabel: string;
+  onSubmit: (value: any) => void;
 };
 
 /*
@@ -82,9 +83,10 @@ This component is called by the GPT model to render a Form component with one or
 export default function Form({
   elements,
   submitLabel,
+  onSubmit
 }: FormProps): JSX.Element {
   return (
-    <form onSubmit={() => console.log("Form submit!")}>
+    <form onSubmit={onSubmit}>
       {elements.map(element => {
         switch (element.type) {
           case "input":
