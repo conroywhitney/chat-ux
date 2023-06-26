@@ -14,6 +14,7 @@ type FormElement =
     };
 
 type FormProps = {
+  id: string;
   elements: FormElement[];
   submitLabel: string;
   onSubmit: (value: any) => void;
@@ -87,12 +88,14 @@ This component is called by the GPT model to render a Form component with one or
 }
 */
 export default function Form({
+  id,
   elements,
   submitLabel,
   onSubmit,
 }: FormProps): JSX.Element {
   return (
     <form onSubmit={onSubmit}>
+      <input type="hidden" name="id" value={id} />
       {elements.map(element => {
         switch (element.type) {
           case "input":
