@@ -5,17 +5,21 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-You're an advanced AI assistant capable of not only sending standard text responses but rendering UI components to facilitate a more dynamic and interactive experience, right in the chat.
+You're an advanced AI experience capable of interactive engagements using text responses, UI components, or ideally, a combination of both.
 
-When the situation calls for it, you can use a variety of functions to create inline components such as buttons or information boxes.
+When responding to user inputs, consider if a dynamic interactive component would enhance your response. You have multiple rendering abilities at your disposal:
 
-You can use "render_plain_text" to render a plaintext message. For example, to show an instruction or to answer a user's query in a clear, textual format.
+You can use "render_plain_text" to produce a straightforward text message - a clear and concise response to user queries, or to provide information or instructions.
 
-You can use "render_button" to display an actionable button brightening the monotony of textual responses.
+"render_button" lets you create actionable buttons. This can be used for straightforward user decisions, where they can select from pre-defined options.
 
-In situations where you need to display multiple components at once, you can use "render_flexbox" to display a group of inline components. This way, you can provide the user with a range of options or several pieces of information at the same time.
+For times when multiple components need to be displayed simultaneously, the "render_flexbox" function is at your service. This can provide the user with a group of inline components, altogether creating complex and engaging responses.
 
-Your intention is to provide useful, interactive, and visually stimulating experiences right in the chat whenever possible. Engage the users in an exciting, dynamic, and robust conversation using the array of functions at your disposal.
+With the introduction of "render_form", you have the ability to request one or more pieces of information from a user in a structured manner, which is ideal for more complex info-gathering tasks.
+
+Remember, your goal is to create an engaging, dynamic conversation, and as such, don't restrict yourself to text-only responses. While responding, you can, and should, use "render_flexbox" to combine "render_plain_text" with other UI components. This brings the conversation to life by coupling your responses with appropriate interactive elements. 
+
+Play to the strength of this interactive environment, using the rich array of UI components to create meaningful and engaging user experiences whenever possible.
 `;
 
 // placeholder function for a future API call to get the weather
@@ -194,7 +198,7 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_button", "render_flexbox", "render_form"],
+                enum: ["render_button", "render_flexbox", "render_form", "render_plain_text"],
                 description: "The name of the function to call.",
               },
               arguments: {
@@ -335,7 +339,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: "auto",
+    function_call: { "name": "render_flexbox" },
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
@@ -347,31 +351,25 @@ async function handleChatCompletion(
 
   const { finish_reason, message } = result.choices[0];
 
-  if (finish_reason === "stop") {
-    return new StreamingTextResponse(message.content);
-  } else if (finish_reason === "function_call") {
-    if (message.function_call.name.startsWith("render_")) {
-      console.log("rendering", message);
-      // @ts-ignore
-      return new StreamingTextResponse(JSON.stringify(message.function_call));
-    } else {
-      const functionResult = callFunction(
-        message.function_call.name,
-        JSON.parse(message.function_call.arguments)
-      );
-      const newMessages = [
-        ...messages,
-        {
-          role: "function",
-          name: message.function_call.name,
-          content: JSON.stringify(functionResult),
-        },
-      ];
-
-      return handleChatCompletion(newMessages, functions, model, depth + 1);
-    }
+  if (message.function_call.name.startsWith("render_")) {
+    console.log("rendering", message);
+    // @ts-ignore
+    return new StreamingTextResponse(JSON.stringify(message.function_call));
   } else {
-    throw new Error(`Unexpected finish_reason: ${finish_reason}`);
+    const functionResult = callFunction(
+      message.function_call.name,
+      JSON.parse(message.function_call.arguments)
+    );
+    const newMessages = [
+      ...messages,
+      {
+        role: "function",
+        name: message.function_call.name,
+        content: JSON.stringify(functionResult),
+      },
+    ];
+
+    return handleChatCompletion(newMessages, functions, model, depth + 1);
   }
 }
 
