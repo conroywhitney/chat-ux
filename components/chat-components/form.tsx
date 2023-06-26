@@ -1,5 +1,7 @@
 "use client";
 
+import { Form as DaisyForm, Radio as DaisyRadio } from "react-daisyui";
+
 type FormElement =
   | {
       id: string;
@@ -198,13 +200,28 @@ export default function Form({
             );
           case "radio":
             return (
-              <div key={element.id}>
-                <input
-                  type="radio"
-                  id={element.id}
-                  name={element.id}
-                />
-                <label htmlFor={element.id}>{element.label}</label>
+              <div
+                key={element.id}
+                className="form-control flex w-full flex-col rounded-lg bg-base-200 p-4 shadow"
+              >
+                {element.options.map(option => {
+                  const optionId = [element.id, option.value].join("-");
+
+                  return (
+                    <DaisyForm.Label
+                      className="flex-1"
+                      key={optionId}
+                      title={option.label}
+                    >
+                      <DaisyRadio
+                        className="ml-4"
+                        id={optionId}
+                        name={element.id}
+                        value={option.value}
+                      />
+                    </DaisyForm.Label>
+                  );
+                })}
               </div>
             );
           default:
