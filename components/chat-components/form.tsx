@@ -91,11 +91,22 @@ export default function Form({
         switch (element.type) {
           case "input":
             return (
-              <div key={element.id} className="form-control w-full max-w-xs">
-                <label htmlFor={element.id} className="label">
+              <div
+                key={element.id}
+                className="form-control w-full max-w-xs"
+              >
+                <label
+                  htmlFor={element.id}
+                  className="label"
+                >
                   <span className="label-text">{element.label}</span>
                 </label>
-                <input type="text" id={element.id} name={element.id} className="input input-bordered w-full max-w-xs" />
+                <input
+                  type="text"
+                  id={element.id}
+                  name={element.id}
+                  className="input-bordered input w-full max-w-xs"
+                />
               </div>
             );
           case "textarea":
@@ -154,7 +165,12 @@ export default function Form({
             return null;
         }
       })}
-      <button type="submit" className="btn btn-primary mt-2">{submitLabel}</button>
+      <button
+        type="submit"
+        className="btn-primary btn mt-2"
+      >
+        {submitLabel}
+      </button>
     </form>
   );
 }

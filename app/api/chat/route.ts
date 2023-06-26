@@ -198,7 +198,12 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_button", "render_flexbox", "render_form", "render_plain_text"],
+                enum: [
+                  "render_button",
+                  "render_flexbox",
+                  "render_form",
+                  "render_plain_text",
+                ],
                 description: "The name of the function to call.",
               },
               arguments: {
@@ -339,7 +344,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: { "name": "render_flexbox" },
+    function_call: { name: "render_flexbox" },
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
