@@ -1,6 +1,10 @@
 "use client";
 
-import { Form as DaisyForm, Radio as DaisyRadio } from "react-daisyui";
+import {
+  Form as DaisyForm,
+  Radio as DaisyRadio,
+  Textarea as DaisyTextarea,
+} from "react-daisyui";
 
 type FormElement =
   | {
@@ -96,7 +100,10 @@ export default function Form({
   onSubmit,
 }: FormProps): JSX.Element {
   return (
-    <form onSubmit={onSubmit}>
+    <form
+      className="w-full"
+      onSubmit={onSubmit}
+    >
       <input
         type="hidden"
         name="id"
@@ -126,9 +133,17 @@ export default function Form({
             );
           case "textarea":
             return (
-              <div key={element.id}>
-                <label htmlFor={element.id}>{element.label}</label>
-                <textarea
+              <div
+                key={element.id}
+                className="form-control flex w-full"
+              >
+                <label
+                  htmlFor={element.id}
+                  className="label"
+                >
+                  <span className="label-text">{element.label}</span>
+                </label>
+                <DaisyTextarea
                   id={element.id}
                   name={element.id}
                 />
