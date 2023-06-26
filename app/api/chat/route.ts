@@ -162,7 +162,7 @@ const functions = [
               options: {
                 type: "array",
                 description:
-                  "(Optional) For select type, the options available to select.",
+                  "(Optional) For types select or checkbox, the options available to select.",
                 items: {
                   type: "object",
                   properties: {

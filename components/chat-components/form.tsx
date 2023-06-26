@@ -4,12 +4,12 @@ type FormElement =
   | {
       id: string;
       label: string;
-      type: "input" | "textarea" | "checkbox" | "radio" | "button";
+      type: "input" | "textarea";
     }
   | {
       id: string;
       label: string;
-      type: "select";
+      type: "select" | "checkbox" | "radio";
       options: { label: string; value: string }[];
     };
 
@@ -58,7 +58,7 @@ This component is called by the GPT model to render a Form component with one or
             options: {
               type: "array",
               description:
-                "(Optional) For select type, the options available to select.",
+                "(Optional) For types select or checkbox, the options available to select.",
               items: {
                 type: "object",
                 properties: {
@@ -168,13 +168,32 @@ export default function Form({
             );
           case "checkbox":
             return (
-              <div key={element.id}>
-                <input
-                  type="checkbox"
-                  id={element.id}
-                  name={element.id}
-                />
-                <label htmlFor={element.id}>{element.label}</label>
+              <div
+                key={element.id}
+                className="form-control"
+              >
+                {element.options.map(option => {
+                  const elementId = [element.id, option.value].join("-");
+
+                  return (
+                    <label
+                      htmlFor={elementId}
+                      key={elementId}
+                      className="label flex w-full cursor-pointer"
+                    >
+                      <input
+                        className="checkbox flex-none"
+                        id={elementId}
+                        name={elementId}
+                        type="checkbox"
+                        value={option.label}
+                      />
+                      <span className="label-text ml-4 flex-1">
+                        {option.label}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             );
           case "radio":
