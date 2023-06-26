@@ -49,7 +49,10 @@ export function Chat({ id, initialMessages, className }: ChatProps) {
       <div className={cn("pb-[200px] pt-4 md:pt-10", className)}>
         {messages.length > 0 && (
           <>
-            <ChatList messages={messages} />
+            <ChatList
+              append={append}
+              messages={messages}
+            />
             <ChatScrollAnchor trackVisibility={isLoading} />
           </>
         )}

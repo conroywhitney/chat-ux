@@ -5,14 +5,14 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-You are @ChatUX, an advanced AI who knows how to render React components and call functions instead of just returning text.
-There are four types of functions you know how to call:
- * "fetch_" functions will load external data (e.g., API calls, database queries, etc.)
- * "get_" functions will prompt the user for additional information (e.g., form fields, etc.)
- * "render_" functions will allow you to output UI components (e.g., buttons, images, etc.)
- * "set_" functions will update the state of the system (e.g., save a value to the database, etc.)
-When it makes sense, you can render multiple components at once with "render_flexbox".
-If there's not a specific function you want to call, you can always render a plaintext message with "render_plain_text".
+You are an advance AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication. You're equipped with these abilities:
+
+1. "render_chat_bubble" - Use this function to generate a textual message. This is ideal for direct responses, instructions, or information sharing that require no user interaction.
+2. "render_buttons" - This function allows you to present multiple pre-defined options to the user. Consider utilizing this when users need to make straightforward decisions or select from several options.
+3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically.
+4. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_form", and "render_chat_bubble").
+
+Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
 
 // placeholder function for a future API call to get the weather
@@ -74,250 +74,156 @@ function fetch_n_day_weather_forecast(args: {
   ];
 }
 
-/*
-Example response from the GPT API when calling a function:
-{
-	id: 'chatcmpl-7UQ1NoOnwUnylhvEMpi0JviQcJG23',
-	object: 'chat.completion',
-	created: 1687484221,
-	model: 'gpt-3.5-turbo-0613',
-	choices: [{
-		index: 0,
-		message: {
-			role: 'assistant',
-			content: null,
-			function_call: {
-				name: 'fetch_current_weather',
-				arguments: '{\n  "location": "Pensacola, FL",\n  "format": "celsius"\n}'
-			}
-		},
-		finish_reason: 'function_call'
-	}],
-	usage: {
-		prompt_tokens: 89,
-		completion_tokens: 29,
-		total_tokens: 118
-	}
-}
-*/
-
-/* Example response from the GPT API when returning a regular message:
-{
-	id: 'chatcmpl-7UQsK6iBHrVAXOXmweDToW0ahv2yB',
-	object: 'chat.completion',
-	created: 1687487504,
-	model: 'gpt-3.5-turbo-0613',
-	choices: [{
-		index: 0,
-		message: {
-			role: 'assistant',
-			content: 'The current weather in Pensacola, FL is 72°F with sunny and windy conditions.'
-		},
-		finish_reason: 'stop'
-	}],
-	usage: {
-		prompt_tokens: 127,
-		completion_tokens: 19,
-		total_tokens: 146
-	}
-}
-*/
-
 // Array of functions that GPT can call
 const functions = [
   {
-    name: "fetch_current_weather",
-    description: "Fetch the current weather",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        format: {
-          type: "string",
-          enum: ["celsius", "fahrenheit"],
-          description:
-            "The temperature unit to use. Infer this from the users location.",
-        },
-      },
-      required: ["location", "format"],
-    },
-  },
-  {
-    name: "fetch_n_day_weather_forecast",
-    description: "Fetch an N-day weather forecast",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        format: {
-          type: "string",
-          enum: ["celsius", "fahrenheit"],
-          description:
-            "The temperature unit to use. Infer this from the users location.",
-        },
-        num_days: {
-          type: "integer",
-          description: "The number of days to forecast",
-        },
-      },
-      required: ["location", "format", "num_days"],
-    },
-  },
-  {
-    name: "fetch_precipitation_percentage",
-    description: "Fetch the next 24 hours of precipitation percentages",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-      },
-      required: ["location"],
-    },
-  },
-  {
-    name: "render_weather",
+    name: "render_buttons",
     description:
-      "Show rather than tell. Render weather-related information, including current weather, 5 day forecast, and precipitation using a client-side React component",
+      "Create a row of one or more interactive buttons. Essentially useful for responses requiring user's choice among multiple options.",
     parameters: {
       type: "object",
       properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        current: {
-          type: "object",
-          properties: {
-            temperature: {
-              type: "string",
-              description: "The current temperature",
+        elements: {
+          description: "One or more button(s) to render.",
+          type: "array",
+          items: {
+            type: "object",
+            description: "A button to render.",
+            properties: {
+              id: {
+                type: "string",
+                description:
+                  "A unique identifier per button; matches the return value when this button is clicked.",
+              },
+              label: {
+                type: "string",
+                description: "The display text on the button.",
+              },
+              value: {
+                type: "string",
+                description:
+                  "The return value when the corresponding button is clicked.",
+              },
+              colorTheme: {
+                type: "string",
+                enum: [
+                  "default",
+                  "primary",
+                  "secondary",
+                  "accent",
+                  "error",
+                  "info",
+                  "success",
+                  "warning",
+                ],
+                description: "The theme color of the button.",
+              },
             },
-            format: {
-              type: "string",
-              enum: ["celsius", "fahrenheit"],
-              description: "The temperature unit to use.",
-            },
-            forecast: {
-              type: "string",
-              description: "The forecast for the rest of the day",
-            },
+            required: ["id", "label", "value", "colorTheme"],
           },
         },
-        forecast: {
+      },
+      required: ["elements"],
+    },
+  },
+  {
+    name: "render_form",
+    description:
+      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description:
+            "A unique identifier to match the return value to this form.",
+        },
+        elements: {
           type: "array",
-          description: "The forecast for the next n days",
+          description:
+            "Form elements to render, including inputs, textareas, checkboxes, radios, select dropdowns, and more.",
           items: {
             type: "object",
             properties: {
-              date: {
+              id: {
                 type: "string",
-                description: "The date of the forecast",
+                description:
+                  "Unique ID to match return value to this form element.",
               },
-              temperature: {
+              label: {
                 type: "string",
-                description: "The temperature",
+                description: "Label displayed for this form element.",
               },
-              format: {
+              type: {
                 type: "string",
-                enum: ["celsius", "fahrenheit"],
-                description: "The temperature unit to use",
+                enum: ["input", "textarea", "select", "checkboxes", "radio"],
+                description: "Type of the form element.",
               },
-              forecast: {
-                type: "string",
-                description: "The forecast for the day",
+              options: {
+                type: "array",
+                description:
+                  "(Optional) For types selects or checkboxes, the options available to select.",
+                items: {
+                  type: "object",
+                  properties: {
+                    label: {
+                      type: "string",
+                      description: "The label text to display for the option.",
+                    },
+                    value: {
+                      type: "string",
+                      description:
+                        "The value to return if this option is selected.",
+                    },
+                  },
+                  required: ["label", "value"],
+                },
               },
             },
+            required: ["id", "label", "type"],
           },
         },
-        precipitation: {
-          type: "array",
-          description: "The precipitation percentages for the next 24 hours",
-          items: {
-            type: "number",
-            description: "The precipitation percentage",
-          },
+        submitLabel: {
+          type: "string",
+          description: "Text to display on the form's submit button.",
         },
       },
-      required: ["location"],
     },
   },
   {
-    name: "render_button",
-    description: "Render a ReactJS/Tailwind/DaisyUI Button component",
+    name: "render_chat_bubble",
+    description:
+      "Displays a textual message. Use for providing information, instructions, or responses that don't require user interaction.",
     parameters: {
       type: "object",
       properties: {
-        color: {
-          type: "string",
-          enum: [
-            "default",
-            "accent",
-            "error",
-            "ghost",
-            "info",
-            "primary",
-            "secondary",
-            "success",
-            "warning",
-          ],
-          description:
-            "The theme indicator to use based on usage and/or severity.",
-        },
-        key: {
-          type: "string",
-          description:
-            "A unique identifier that will let you match a return value back to this exact rendering.",
-        },
-        label: {
-          type: "string",
-          description: "The text value to show on the Button.",
-        },
         value: {
           type: "string",
-          description:
-            "What to return if/when the button is clicked. When paired with the id parameter.",
+          description: "The content of the plaintext message.",
         },
       },
-      required: ["color", "key", "label", "value"],
+      required: ["value"],
     },
   },
   {
-    name: "render_flexbox",
+    name: "render_response",
     description:
-      "Render multiple components at the same time using CSS flexbox, as defined in the other available render_* functions. Can also render child flexboxes.",
+      "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
     parameters: {
       type: "object",
       properties: {
-        alignItems: {
-          type: "string",
-          enum: [
-            "items-start",
-            "items-end",
-            "items-center",
-            "items-baseline",
-            "items-stretch",
-          ],
-          description: "The CSS flexbox align-items to use.",
-        },
-        children: {
+        elements: {
           type: "array",
-          description: "The list of child components to render.",
+          description:
+            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
           items: {
             type: "object",
+            description: "A component to render.",
             properties: {
               name: {
                 type: "string",
-                enum: ["render_button", "render_flexbox", "render_weather"],
-                description: "The name of the function to call.",
+                enum: ["render_buttons", "render_form", "render_chat_bubble"],
+                description: "The name of the render function.",
               },
               arguments: {
                 type: "string",
@@ -327,41 +233,8 @@ const functions = [
             required: ["name", "arguments"],
           },
         },
-        flexDirection: {
-          type: "string",
-          enum: ["flex-col", "flex-row"],
-          description: "The CSS flexbox direction to use.",
-        },
-        justifyContent: {
-          type: "string",
-          enum: [
-            "justify-normal",
-            "justify-start",
-            "justify-end",
-            "justify-center",
-            "justify-between",
-            "justify-around",
-            "justify-evenly",
-            "justify-stretch",
-          ],
-          description: "The CSS flexbox justify-content to use.",
-        },
       },
-    },
-    required: ["alignItems", "children", "flexDirection", "justifyContent"],
-  },
-  {
-    name: "render_plain_text",
-    description:
-      "Render a ReactJS/Tailwind/DaisyUI PlainText chat bubble component",
-    parameters: {
-      type: "object",
-      properties: {
-        value: {
-          type: "string",
-          description: "The content of the plaintext chat message.",
-        },
-      },
+      required: ["elements"],
     },
   },
 ];
@@ -387,7 +260,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: "auto",
+    function_call: { name: "render_response" },
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
@@ -399,31 +272,25 @@ async function handleChatCompletion(
 
   const { finish_reason, message } = result.choices[0];
 
-  if (finish_reason === "stop") {
-    return new StreamingTextResponse(message.content);
-  } else if (finish_reason === "function_call") {
-    if (message.function_call.name.startsWith("render_")) {
-      console.log("rendering", message);
-      // @ts-ignore
-      return new StreamingTextResponse(JSON.stringify(message.function_call));
-    } else {
-      const functionResult = callFunction(
-        message.function_call.name,
-        JSON.parse(message.function_call.arguments)
-      );
-      const newMessages = [
-        ...messages,
-        {
-          role: "function",
-          name: message.function_call.name,
-          content: JSON.stringify(functionResult),
-        },
-      ];
-
-      return handleChatCompletion(newMessages, functions, model, depth + 1);
-    }
+  if (message.function_call.name.startsWith("render_")) {
+    console.log("rendering", message);
+    // @ts-ignore
+    return new StreamingTextResponse(JSON.stringify(message.function_call));
   } else {
-    throw new Error(`Unexpected finish_reason: ${finish_reason}`);
+    const functionResult = callFunction(
+      message.function_call.name,
+      JSON.parse(message.function_call.arguments)
+    );
+    const newMessages = [
+      ...messages,
+      {
+        role: "function",
+        name: message.function_call.name,
+        content: JSON.stringify(functionResult),
+      },
+    ];
+
+    return handleChatCompletion(newMessages, functions, model, depth + 1);
   }
 }
 
