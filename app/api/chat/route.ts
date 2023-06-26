@@ -5,21 +5,14 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-You're an advanced AI experience capable of interactive engagements using text responses, UI components, or ideally, a combination of both.
+You are an advance AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication. You're equipped with these abilities:
 
-When responding to user inputs, consider if a dynamic interactive component would enhance your response. You have multiple rendering abilities at your disposal:
+1. "render_chat_bubble" - Use this function to generate a textual message. This is ideal for direct responses, instructions, or information sharing that require no user interaction.
+2. "render_buttons" - This function allows you to present multiple pre-defined options to the user. Consider utilizing this when users need to make straightforward decisions or select from several options.
+3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically.
+4. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_form", and "render_chat_bubble").
 
-You can use "render_plain_text" to produce a straightforward text message - a clear and concise response to user queries, or to provide information or instructions.
-
-"render_button" lets you create actionable buttons. This can be used for straightforward user decisions, where they can select from pre-defined options.
-
-For times when multiple components need to be displayed simultaneously, the "render_flexbox" function is at your service. This can provide the user with a group of inline components, altogether creating complex and engaging responses.
-
-With the introduction of "render_form", you have the ability to request one or more pieces of information from a user in a structured manner, which is ideal for more complex info-gathering tasks.
-
-Remember, your goal is to create an engaging, dynamic conversation, and as such, don't restrict yourself to text-only responses. While responding, you can, and should, use "render_flexbox" to combine "render_plain_text" with other UI components. This brings the conversation to life by coupling your responses with appropriate interactive elements. 
-
-Play to the strength of this interactive environment, using the rich array of UI components to create meaningful and engaging user experiences whenever possible.
+Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
 
 // placeholder function for a future API call to get the weather
@@ -81,207 +74,95 @@ function fetch_n_day_weather_forecast(args: {
   ];
 }
 
-/*
-Example response from the GPT API when calling a function:
-{
-	id: 'chatcmpl-7UQ1NoOnwUnylhvEMpi0JviQcJG23',
-	object: 'chat.completion',
-	created: 1687484221,
-	model: 'gpt-3.5-turbo-0613',
-	choices: [{
-		index: 0,
-		message: {
-			role: 'assistant',
-			content: null,
-			function_call: {
-				name: 'fetch_current_weather',
-				arguments: '{\n  "location": "Pensacola, FL",\n  "format": "celsius"\n}'
-			}
-		},
-		finish_reason: 'function_call'
-	}],
-	usage: {
-		prompt_tokens: 89,
-		completion_tokens: 29,
-		total_tokens: 118
-	}
-}
-*/
-
-/* Example response from the GPT API when returning a regular message:
-{
-	id: 'chatcmpl-7UQsK6iBHrVAXOXmweDToW0ahv2yB',
-	object: 'chat.completion',
-	created: 1687487504,
-	model: 'gpt-3.5-turbo-0613',
-	choices: [{
-		index: 0,
-		message: {
-			role: 'assistant',
-			content: 'The current weather in Pensacola, FL is 72°F with sunny and windy conditions.'
-		},
-		finish_reason: 'stop'
-	}],
-	usage: {
-		prompt_tokens: 127,
-		completion_tokens: 19,
-		total_tokens: 146
-	}
-}
-*/
-
 // Array of functions that GPT can call
 const functions = [
   {
-    name: "render_button",
-    description: "Render a ReactJS/Tailwind/DaisyUI Button component",
-    parameters: {
-      type: "object",
-      properties: {
-        color: {
-          type: "string",
-          enum: [
-            "default",
-            "accent",
-            "error",
-            "ghost",
-            "info",
-            "primary",
-            "secondary",
-            "success",
-            "warning",
-          ],
-          description:
-            "The theme indicator to use based on usage and/or severity.",
-        },
-        key: {
-          type: "string",
-          description:
-            "A unique identifier that will let you match a return value back to this exact rendering.",
-        },
-        label: {
-          type: "string",
-          description: "The text value to show on the Button.",
-        },
-        value: {
-          type: "string",
-          description:
-            "What to return if/when the button is clicked. When paired with the id parameter.",
-        },
-      },
-      required: ["color", "key", "label", "value"],
-    },
-  },
-  {
-    name: "render_flexbox",
+    name: "render_buttons",
     description:
-      "Render multiple components at the same time using CSS flexbox, as defined in the other available render_* functions. Can also render child flexboxes.",
+      "Create a row of one or more interactive buttons. Essentially useful for responses requiring user's choice among multiple options.",
     parameters: {
       type: "object",
       properties: {
-        alignItems: {
-          type: "string",
-          enum: [
-            "items-start",
-            "items-end",
-            "items-center",
-            "items-baseline",
-            "items-stretch",
-          ],
-          description: "The CSS flexbox align-items to use.",
-        },
-        children: {
+        elements: {
+          description: "One or more button(s) to render.",
           type: "array",
-          description: "The list of child components to render.",
           items: {
             type: "object",
+            description: "A button to render.",
             properties: {
-              name: {
+              id: {
+                type: "string",
+                description:
+                  "A unique identifier per button; matches the return value when this button is clicked.",
+              },
+              label: {
+                type: "string",
+                description: "The display text on the button.",
+              },
+              value: {
+                type: "string",
+                description:
+                  "The return value when the corresponding button is clicked.",
+              },
+              colorTheme: {
                 type: "string",
                 enum: [
-                  "render_button",
-                  "render_flexbox",
-                  "render_form",
-                  "render_plain_text",
+                  "default",
+                  "primary",
+                  "secondary",
+                  "accent",
+                  "error",
+                  "info",
+                  "success",
+                  "warning",
                 ],
-                description: "The name of the function to call.",
-              },
-              arguments: {
-                type: "string",
-                description: "The arguments to pass to the function.",
+                description: "The theme color of the button.",
               },
             },
-            required: ["name", "arguments"],
+            required: ["id", "label", "value", "colorTheme"],
           },
         },
-        flexDirection: {
-          type: "string",
-          enum: ["flex-col", "flex-row"],
-          description: "The CSS flexbox direction to use.",
-        },
-        justifyContent: {
-          type: "string",
-          enum: [
-            "justify-normal",
-            "justify-start",
-            "justify-end",
-            "justify-center",
-            "justify-between",
-            "justify-around",
-            "justify-evenly",
-            "justify-stretch",
-          ],
-          description: "The CSS flexbox justify-content to use.",
-        },
       },
-    },
-    required: ["alignItems", "children", "flexDirection", "justifyContent"],
-  },
-  {
-    name: "render_plain_text",
-    description:
-      "Render a ReactJS/Tailwind/DaisyUI PlainText chat bubble component",
-    parameters: {
-      type: "object",
-      properties: {
-        value: {
-          type: "string",
-          description: "The content of the plaintext chat message.",
-        },
-      },
+      required: ["elements"],
     },
   },
   {
     name: "render_form",
     description:
-      "Render a ReactJS/Tailwind/DaisyUI Form component to get one or more pieces of information from a user.",
+      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
     parameters: {
       type: "object",
       properties: {
         id: {
           type: "string",
           description:
-            "A unique identifier that will let you match a return value back to this exact rendering.",
+            "A unique identifier to match the return value to this form.",
         },
         elements: {
           type: "array",
-          description: "The list of child form elements to render.",
+          description:
+            "Form elements to render, including inputs, textareas, checkboxes, radios, select dropdowns, and more.",
           items: {
             type: "object",
             properties: {
               id: {
                 type: "string",
                 description:
-                  "A unique identifier that will let you match a return value back to this specific form element.",
+                  "Unique ID to match return value to this form element.",
               },
               label: {
                 type: "string",
-                description: "The label text to display for the form element.",
+                description: "Label displayed for this form element.",
+              },
+              type: {
+                type: "string",
+                enum: ["input", "textarea", "select", "checkbox", "radio"],
+                description: "Type of the form element.",
               },
               options: {
                 type: "array",
                 description:
-                  "The list of options to display for a select element.",
+                  "(Optional) For select type, the options available to select.",
                 items: {
                   type: "object",
                   properties: {
@@ -298,27 +179,62 @@ const functions = [
                   required: ["label", "value"],
                 },
               },
-              type: {
-                type: "string",
-                enum: [
-                  "input",
-                  "textarea",
-                  "select",
-                  "checkbox",
-                  "radio",
-                  "button",
-                ],
-                description: "The type of form element to render.",
-              },
             },
             required: ["id", "label", "type"],
           },
         },
         submitLabel: {
           type: "string",
-          description: "The label text to display on the submit button.",
+          description: "Text to display on the form's submit button.",
         },
       },
+    },
+  },
+  {
+    name: "render_chat_bubble",
+    description:
+      "Displays a textual message. Use for providing information, instructions, or responses that don't require user interaction.",
+    parameters: {
+      type: "object",
+      properties: {
+        value: {
+          type: "string",
+          description: "The content of the plaintext message.",
+        },
+      },
+      required: ["value"],
+    },
+  },
+  {
+    name: "render_response",
+    description:
+      "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
+    parameters: {
+      type: "object",
+      properties: {
+        elements: {
+          type: "array",
+          description:
+            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
+          items: {
+            type: "object",
+            description: "A component to render.",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["render_buttons", "render_form", "render_chat_bubble"],
+                description: "The name of the render function.",
+              },
+              arguments: {
+                type: "string",
+                description: "The arguments to pass to the function.",
+              },
+            },
+            required: ["name", "arguments"],
+          },
+        },
+      },
+      required: ["elements"],
     },
   },
 ];
@@ -344,7 +260,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: { name: "render_flexbox" },
+    function_call: { name: "render_response" },
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,

@@ -4,7 +4,7 @@ import { useCallback } from "react";
 import { type Message } from "ai";
 import { nanoid } from "@/lib/utils";
 
-import PlainText from "@/components/chat-components/plain_text";
+import ChatBubble from "@/components/chat-components/chat_bubble";
 
 interface ComponentArgs {
   [key: string]: any;
@@ -26,18 +26,13 @@ const renderComponent = ({
   handleSubmit: (value: any) => void;
 }) => {
   try {
-    if (name == "render_flexbox") {
-      const { alignItems, children, flexDirection, justifyContent } =
-        JSON.parse(args);
+    if (name == "render_response") {
+      const { elements } = JSON.parse(args);
 
       return (
-        <div
-          className={`flex ${alignItems || "items-start"} ${
-            flexDirection || "flex-col"
-          } ${justifyContent || "justify-start"} me-2 w-3/4 py-4`}
-        >
-          {children.map((child: any) =>
-            renderComponent({ ...child, handleSubmit })
+        <div className="me-2 flex w-3/4 flex-col items-start justify-start space-y-4 py-4">
+          {elements.map((element: any) =>
+            renderComponent({ ...element, handleSubmit })
           )}
         </div>
       );
@@ -74,7 +69,7 @@ const renderMessage = (
     >
       {isComponent && renderComponent({ ...JSON.parse(content), handleSubmit })}
       {!isComponent && (
-        <PlainText
+        <ChatBubble
           value={content}
           user={role == "user"}
         />
