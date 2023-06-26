@@ -30,7 +30,10 @@ export default function ChatBubble(args: ChatBubbleArgs): JSX.Element {
   const { value, user } = args;
 
   return (
-    <DaisyChatBubble key={nanoid()} end={user}>
+    <DaisyChatBubble
+      key={nanoid()}
+      end={user}
+    >
       <DaisyChatBubble.Message>{value}</DaisyChatBubble.Message>
     </DaisyChatBubble>
   );

@@ -95,7 +95,11 @@ export default function Form({
 }: FormProps): JSX.Element {
   return (
     <form onSubmit={onSubmit}>
-      <input type="hidden" name="id" value={id} />
+      <input
+        type="hidden"
+        name="id"
+        value={id}
+      />
       {elements.map(element => {
         switch (element.type) {
           case "input":
@@ -130,13 +134,27 @@ export default function Form({
             );
           case "select":
             return (
-              <div key={element.id}>
-                <label htmlFor={element.id}>{element.label}</label>
+              <div
+                key={element.id}
+                className="form-control w-full max-w-xs"
+              >
+                <label
+                  className="label"
+                  htmlFor={element.id}
+                >
+                  <span className="label-text">{element.label}</span>
+                </label>
                 <select
                   id={element.id}
                   name={element.id}
+                  className="select-bordered select"
                 >
-                  <option value="">Select an option</option>
+                  <option
+                    disabled
+                    selected
+                  >
+                    Pick one
+                  </option>
                   {element.options.map(option => (
                     <option
                       key={option.value}
