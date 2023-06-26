@@ -3,7 +3,7 @@
 import { type Message } from "ai";
 
 import { Separator } from "@/components/ui/separator";
-import { ChatMessage } from "@/components/chat-message";
+import PlainText from "@/components/chat-components/plain_text";
 
 interface ComponentArgs {
   [key: string]: any;
@@ -27,7 +27,9 @@ const renderComponent = ({
 
       return (
         <div
-          className={`flex ${alignItems} ${flexDirection} ${justifyContent}`}
+          className={`flex ${alignItems || "items-start"} ${
+            flexDirection || "flex-col"
+          } ${justifyContent || "justify-start"} me-2 w-3/4 py-4`}
         >
           {children.map(renderComponent)}
         </div>
@@ -48,13 +50,21 @@ const renderComponent = ({
 };
 
 const renderMessage = (message: Message, index: number) => {
-  const isComponent = message.content.includes("render_");
+  const { content, role } = message;
+  const isComponent = content.includes("render_");
 
   return (
-    <div key={index}>
-      {isComponent && renderComponent(JSON.parse(message.content))}
-      {!isComponent && <ChatMessage message={message} />}
-      <Separator className="my-4 md:my-8" />
+    <div
+      key={index}
+      className="py-4"
+    >
+      {isComponent && renderComponent(JSON.parse(content))}
+      {!isComponent && (
+        <PlainText
+          value={content}
+          user={role == "user"}
+        />
+      )}
     </div>
   );
 };
