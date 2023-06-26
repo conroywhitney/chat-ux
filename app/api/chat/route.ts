@@ -156,13 +156,13 @@ const functions = [
               },
               type: {
                 type: "string",
-                enum: ["input", "textarea", "select", "checkbox", "radio"],
+                enum: ["input", "textarea", "select", "checkboxes", "radio"],
                 description: "Type of the form element.",
               },
               options: {
                 type: "array",
                 description:
-                  "(Optional) For types select or checkbox, the options available to select.",
+                  "(Optional) For types selects or checkboxes, the options available to select.",
                 items: {
                   type: "object",
                   properties: {

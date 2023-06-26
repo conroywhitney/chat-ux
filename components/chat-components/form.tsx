@@ -9,7 +9,7 @@ type FormElement =
   | {
       id: string;
       label: string;
-      type: "select" | "checkbox" | "radio";
+      type: "select" | "checkboxes" | "radio";
       options: { label: string; value: string }[];
     };
 
@@ -58,7 +58,7 @@ This component is called by the GPT model to render a Form component with one or
             options: {
               type: "array",
               description:
-                "(Optional) For types select or checkbox, the options available to select.",
+                "(Optional) For types select or checkboxes, the options available to select.",
               items: {
                 type: "object",
                 properties: {
@@ -166,7 +166,7 @@ export default function Form({
                 </select>
               </div>
             );
-          case "checkbox":
+          case "checkboxes":
             return (
               <div
                 key={element.id}
