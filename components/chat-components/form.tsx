@@ -83,7 +83,7 @@ This component is called by the GPT model to render a Form component with one or
 export default function Form({
   elements,
   submitLabel,
-  onSubmit
+  onSubmit,
 }: FormProps): JSX.Element {
   return (
     <form onSubmit={onSubmit}>

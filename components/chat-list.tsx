@@ -12,14 +12,14 @@ interface ComponentArgs {
 }
 
 export interface ChatList {
-  append: (message: Message) => void;
+  append?: (message: Message) => void;
   messages: Message[];
 }
 
 const renderComponent = ({
   name,
   arguments: args,
-  handleSubmit
+  handleSubmit,
 }: {
   name: string;
   arguments: string;
@@ -36,7 +36,9 @@ const renderComponent = ({
             flexDirection || "flex-col"
           } ${justifyContent || "justify-start"} me-2 w-3/4 py-4`}
         >
-          {children.map((child: any) => renderComponent({ ...child, handleSubmit }))}
+          {children.map((child: any) =>
+            renderComponent({ ...child, handleSubmit })
+          )}
         </div>
       );
     } else {
@@ -45,7 +47,12 @@ const renderComponent = ({
         require(`@/components/chat-components/${componentName}`).default;
       const componentArgs: ComponentArgs = JSON.parse(args);
 
-      return <Component {...componentArgs} onSubmit={handleSubmit} />;
+      return (
+        <Component
+          {...componentArgs}
+          onSubmit={handleSubmit}
+        />
+      );
     }
   } catch (error) {
     console.error(error);
@@ -53,7 +60,10 @@ const renderComponent = ({
   }
 };
 
-const renderMessage = (message: Message, handleSubmit: (value: any) => void) => {
+const renderMessage = (
+  message: Message,
+  handleSubmit: (value: any) => void
+) => {
   const { content, role } = message;
   const isComponent = content.includes("render_");
 
@@ -74,14 +84,22 @@ const renderMessage = (message: Message, handleSubmit: (value: any) => void) => 
 };
 
 export function ChatList({ append, messages }: ChatList) {
-  const handleSubmit = useCallback((value: any) => {
-    console.log("value", value);
-    append({
-      id: nanoid(),
-      content: JSON.stringify(value),
-      role: "user"
-    });
-  }, [append]);
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault(); // prevent default form submission behavior
+      const formData = new FormData(event.target as HTMLFormElement); // create a new FormData object from the form element
+      const values = Object.fromEntries(formData.entries()); // convert the FormData object to a plain object
+      console.log(values); // log the values of the input elements
+      if (append) {
+        append({
+          id: nanoid(),
+          content: JSON.stringify(values),
+          role: "user",
+        });
+      }
+    },
+    [append]
+  );
 
   if (!messages.length) return null;
 
