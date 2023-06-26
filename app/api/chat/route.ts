@@ -129,131 +129,6 @@ Example response from the GPT API when calling a function:
 // Array of functions that GPT can call
 const functions = [
   {
-    name: "fetch_current_weather",
-    description: "Fetch the current weather",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        format: {
-          type: "string",
-          enum: ["celsius", "fahrenheit"],
-          description:
-            "The temperature unit to use. Infer this from the users location.",
-        },
-      },
-      required: ["location", "format"],
-    },
-  },
-  {
-    name: "fetch_n_day_weather_forecast",
-    description: "Fetch an N-day weather forecast",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        format: {
-          type: "string",
-          enum: ["celsius", "fahrenheit"],
-          description:
-            "The temperature unit to use. Infer this from the users location.",
-        },
-        num_days: {
-          type: "integer",
-          description: "The number of days to forecast",
-        },
-      },
-      required: ["location", "format", "num_days"],
-    },
-  },
-  {
-    name: "fetch_precipitation_percentage",
-    description: "Fetch the next 24 hours of precipitation percentages",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-      },
-      required: ["location"],
-    },
-  },
-  {
-    name: "render_weather",
-    description:
-      "Show rather than tell. Render weather-related information, including current weather, 5 day forecast, and precipitation using a client-side React component",
-    parameters: {
-      type: "object",
-      properties: {
-        location: {
-          type: "string",
-          description: "The city and state, e.g. San Francisco, CA",
-        },
-        current: {
-          type: "object",
-          properties: {
-            temperature: {
-              type: "string",
-              description: "The current temperature",
-            },
-            format: {
-              type: "string",
-              enum: ["celsius", "fahrenheit"],
-              description: "The temperature unit to use.",
-            },
-            forecast: {
-              type: "string",
-              description: "The forecast for the rest of the day",
-            },
-          },
-        },
-        forecast: {
-          type: "array",
-          description: "The forecast for the next n days",
-          items: {
-            type: "object",
-            properties: {
-              date: {
-                type: "string",
-                description: "The date of the forecast",
-              },
-              temperature: {
-                type: "string",
-                description: "The temperature",
-              },
-              format: {
-                type: "string",
-                enum: ["celsius", "fahrenheit"],
-                description: "The temperature unit to use",
-              },
-              forecast: {
-                type: "string",
-                description: "The forecast for the day",
-              },
-            },
-          },
-        },
-        precipitation: {
-          type: "array",
-          description: "The precipitation percentages for the next 24 hours",
-          items: {
-            type: "number",
-            description: "The precipitation percentage",
-          },
-        },
-      },
-      required: ["location"],
-    },
-  },
-  {
     name: "render_button",
     description: "Render a ReactJS/Tailwind/DaisyUI Button component",
     parameters: {
@@ -319,7 +194,7 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_button", "render_flexbox", "render_weather"],
+                enum: ["render_button", "render_flexbox", "render_form"],
                 description: "The name of the function to call.",
               },
               arguments: {
@@ -366,6 +241,64 @@ const functions = [
         },
       },
     },
+  },
+  {
+    name: "render_form",
+    description: "Render a ReactJS/Tailwind/DaisyUI Form component to get one or more pieces of information from a user.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "A unique identifier that will let you match a return value back to this exact rendering."
+        },
+        elements: {
+          type: "array",
+          description: "The list of child form elements to render.",
+          items: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "A unique identifier that will let you match a return value back to this specific form element.",
+              },
+              label: {
+                type: "string",
+                description: "The label text to display for the form element.",
+              },
+              options: {
+                type: "array",
+                description: "The list of options to display for a select element.",
+                items: {
+                  type: "object",
+                  properties: {
+                    label: {
+                      type: "string",
+                      description: "The label text to display for the option.",
+                    },
+                    value: {
+                      type: "string",
+                      description: "The value to return if this option is selected.",
+                    },
+                  },
+                  required: ["label", "value"],
+                },
+              },
+              type: {
+                type: "string",
+                enum: ["input", "textarea", "select", "checkbox", "radio", "button"],
+                description: "The type of form element to render.",
+              }
+            },
+            required: ["id", "label", "type"],
+          },
+        },
+        submitLabel: {
+          type: "string",
+          description: "The label text to display on the submit button.",
+        },
+      }
+    }
   },
 ];
 

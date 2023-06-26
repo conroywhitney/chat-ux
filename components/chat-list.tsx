@@ -2,7 +2,6 @@
 
 import { type Message } from "ai";
 
-import { Separator } from "@/components/ui/separator";
 import PlainText from "@/components/chat-components/plain_text";
 
 interface ComponentArgs {
@@ -36,10 +35,12 @@ const renderComponent = ({
       );
     } else {
       const componentName = name.replace("render_", "");
+      console.log("componentName", componentName)
       const Component =
         require(`@/components/chat-components/${componentName}`).default;
-
+      console.log("Component", Component)
       const componentArgs: ComponentArgs = JSON.parse(args);
+      console.log("componentArgs", componentArgs)
 
       return <Component {...componentArgs} />;
     }
