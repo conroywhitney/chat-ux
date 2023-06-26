@@ -244,13 +244,15 @@ const functions = [
   },
   {
     name: "render_form",
-    description: "Render a ReactJS/Tailwind/DaisyUI Form component to get one or more pieces of information from a user.",
+    description:
+      "Render a ReactJS/Tailwind/DaisyUI Form component to get one or more pieces of information from a user.",
     parameters: {
       type: "object",
       properties: {
         id: {
           type: "string",
-          description: "A unique identifier that will let you match a return value back to this exact rendering."
+          description:
+            "A unique identifier that will let you match a return value back to this exact rendering.",
         },
         elements: {
           type: "array",
@@ -260,7 +262,8 @@ const functions = [
             properties: {
               id: {
                 type: "string",
-                description: "A unique identifier that will let you match a return value back to this specific form element.",
+                description:
+                  "A unique identifier that will let you match a return value back to this specific form element.",
               },
               label: {
                 type: "string",
@@ -268,7 +271,8 @@ const functions = [
               },
               options: {
                 type: "array",
-                description: "The list of options to display for a select element.",
+                description:
+                  "The list of options to display for a select element.",
                 items: {
                   type: "object",
                   properties: {
@@ -278,7 +282,8 @@ const functions = [
                     },
                     value: {
                       type: "string",
-                      description: "The value to return if this option is selected.",
+                      description:
+                        "The value to return if this option is selected.",
                     },
                   },
                   required: ["label", "value"],
@@ -286,9 +291,16 @@ const functions = [
               },
               type: {
                 type: "string",
-                enum: ["input", "textarea", "select", "checkbox", "radio", "button"],
+                enum: [
+                  "input",
+                  "textarea",
+                  "select",
+                  "checkbox",
+                  "radio",
+                  "button",
+                ],
                 description: "The type of form element to render.",
-              }
+              },
             },
             required: ["id", "label", "type"],
           },
@@ -297,8 +309,8 @@ const functions = [
           type: "string",
           description: "The label text to display on the submit button.",
         },
-      }
-    }
+      },
+    },
   },
 ];
 

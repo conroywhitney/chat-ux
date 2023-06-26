@@ -79,33 +79,49 @@ This component is called by the GPT model to render a Form component with one or
   }
 }
 */
-export default function Form({ elements, submitLabel }: FormProps): JSX.Element {
+export default function Form({
+  elements,
+  submitLabel,
+}: FormProps): JSX.Element {
   return (
     <form onSubmit={() => console.log("Form submit!")}>
-      {elements.map((element) => {
+      {elements.map(element => {
         switch (element.type) {
           case "input":
             return (
               <div key={element.id}>
                 <label htmlFor={element.id}>{element.label}</label>
-                <input type="text" id={element.id} name={element.id} />
+                <input
+                  type="text"
+                  id={element.id}
+                  name={element.id}
+                />
               </div>
             );
           case "textarea":
             return (
               <div key={element.id}>
                 <label htmlFor={element.id}>{element.label}</label>
-                <textarea id={element.id} name={element.id} />
+                <textarea
+                  id={element.id}
+                  name={element.id}
+                />
               </div>
             );
           case "select":
             return (
               <div key={element.id}>
                 <label htmlFor={element.id}>{element.label}</label>
-                <select id={element.id} name={element.id}>
+                <select
+                  id={element.id}
+                  name={element.id}
+                >
                   <option value="">Select an option</option>
-                  {element.options.map((option) => (
-                    <option key={option.value} value={option.value}>
+                  {element.options.map(option => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                    >
                       {option.label}
                     </option>
                   ))}
@@ -115,14 +131,22 @@ export default function Form({ elements, submitLabel }: FormProps): JSX.Element 
           case "checkbox":
             return (
               <div key={element.id}>
-                <input type="checkbox" id={element.id} name={element.id} />
+                <input
+                  type="checkbox"
+                  id={element.id}
+                  name={element.id}
+                />
                 <label htmlFor={element.id}>{element.label}</label>
               </div>
             );
           case "radio":
             return (
               <div key={element.id}>
-                <input type="radio" id={element.id} name={element.id} />
+                <input
+                  type="radio"
+                  id={element.id}
+                  name={element.id}
+                />
                 <label htmlFor={element.id}>{element.label}</label>
               </div>
             );
