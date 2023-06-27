@@ -470,7 +470,7 @@ async function handleChatCompletion(
     return new StreamingTextResponse(JSON.stringify(message.function_call));
   } else {
     const functionResult = callFunction(
-      message.function_call.name,
+      message.function_call.name.replace("functions.", ""),
       JSON.parse(message.function_call.arguments)
     );
     const newMessages = [
