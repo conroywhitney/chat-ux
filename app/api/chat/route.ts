@@ -253,6 +253,26 @@ const functions = [
                   required: ["header", "value"],
                 },
               },
+              detailsButton: {
+                type: "object",
+                description: "The details button for this row.",
+                properties: {
+                  id: {
+                    type: "string",
+                    description:
+                      "A unique identifier for the button so when it's clicked, it's obvious which table and row was clicked.",
+                  },
+                  label: {
+                    type: "string",
+                    description: "The label for the details button.",
+                  },
+                  value: {
+                    type: "string",
+                    description:
+                      "The value to return when the details button is clicked.",
+                  },
+                },
+              },
             },
             required: ["id", "columns"],
           },

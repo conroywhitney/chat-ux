@@ -1,6 +1,7 @@
 "use client";
 
 import { Button as DaisyButton, Table as DaisyTable } from "react-daisyui";
+import React from "react";
 
 /*
 This component is called by the GPT model to render a table with headers and one or more rows. It is defined by this JSON structure:
@@ -69,6 +70,11 @@ interface ColumnArgs {
 interface RowArgs {
   id: string;
   columns: ColumnArgs[];
+  detailsButton?: {
+    id: string;
+    label: string;
+    value: string;
+  };
   headers: string[];
   onClick: ({ id, value }: { id: string; value: string }) => void;
 }
@@ -80,23 +86,48 @@ interface TableArgs {
   onClick: ({ id, value }: { id: string; value: string }) => void;
 }
 
-const renderHeader = (header: string) => <span key={header}>{header}</span>;
+const renderHeader = (header: string) => {
+  console.log("renderHeader", header);
 
-const renderRow = (args: RowArgs): JSX.Element => {
-  const { id, columns, headers } = args;
+  return <span key={header}>{header}</span>;
+};
 
+const renderRow = (id: string, headers: string[], columnMap: Map<string, any>, detailsButton?: any, onClick?: any) => {
+  const elements = headers.map((header: string, index: number) => (
+    <div key={`${id}-${header}`}>
+      {columnMap.get(header)}
+    </div>
+  ));
+
+  if (detailsButton) {
+    elements.push(
+      <DaisyButton
+        key={`details-${id}`}
+        onClick={() => onClick?.({ id: detailsButton.id, value: detailsButton.value })}
+      >
+        {detailsButton.label}
+      </DaisyButton>
+    );
+  }
+  
+  return elements;
+};
+
+const renderRows = (args: RowArgs): JSX.Element => {
+  const { id, columns, detailsButton, headers, onClick } = args;
+  const columnMap = new Map(
+    columns.map(column => [column.header, column.value])
+  );
+  
   return (
-    <DaisyTable.Row>
-      {headers.map((header: string) => (
-        <div key={id}>
-          {columns.find(column => column.header == header)?.value}
-        </div>
-      ))}
+    <DaisyTable.Row key={`row-${id}`}>
+      {renderRow(id, headers, columnMap, detailsButton, onClick)}
     </DaisyTable.Row>
   );
 };
 
 const renderTable = (args: TableArgs) => {
+  console.log("renderTable", args);
   const { id, headers, rows, onClick } = args;
 
   return (
@@ -107,7 +138,7 @@ const renderTable = (args: TableArgs) => {
       >
         <DaisyTable.Head>{headers.map(renderHeader)}</DaisyTable.Head>
         <DaisyTable.Body>
-          {rows.map((row: RowArgs) => renderRow({ ...row, headers, onClick }))}
+          {rows.map((row: RowArgs) => renderRows({ ...row, headers, onClick }))}
         </DaisyTable.Body>
       </DaisyTable>
     </div>
@@ -115,6 +146,7 @@ const renderTable = (args: TableArgs) => {
 };
 
 export default function Table(args: TableArgs): JSX.Element {
+  console.log("Table", args);
   const { headers, id, rows, onClick } = args;
 
   return (
