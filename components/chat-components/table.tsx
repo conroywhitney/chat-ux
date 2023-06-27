@@ -109,7 +109,12 @@ const renderHeader = (args: HeaderArgs) => {
 
 const renderRow = (args: RowArgs) => {
   const { columns, detailsButton, headers, id, tableId, onClick } = args;
-  const columnMap = new Map(columns.map(column => [column.header, { id: column.id, value: column.value }]));
+  const columnMap = new Map(
+    columns.map(column => [
+      column.header,
+      { id: column.id, value: column.value },
+    ])
+  );
   const rowId = `${tableId}-row-${id}`;
 
   const elements = headers.map((header: string) => {
@@ -136,9 +141,7 @@ const renderRow = (args: RowArgs) => {
       <DaisyButton
         id={detailsId}
         key={detailsId}
-        onClick={() =>
-          onClick?.({ id: detailsId, value: detailsButton.value })
-        }
+        onClick={() => onClick?.({ id: detailsId, value: detailsButton.value })}
       >
         {detailsButton.label}
       </DaisyButton>
