@@ -109,7 +109,7 @@ export function ChatList({ append, messages }: ChatList) {
       if (append) {
         append({
           id: nanoid(),
-          content: JSON.stringify({ id, value }),
+          content: JSON.stringify({ button: id }),
           role: "user",
         });
       }
