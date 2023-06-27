@@ -5,12 +5,7 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-You are an advance AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication. You're equipped with these abilities:
-
-1. "render_chat_bubble" - Use this function to generate a textual message. This is ideal for direct responses, instructions, or information sharing that require no user interaction.
-2. "render_buttons" - This function allows you to present multiple pre-defined options to the user. Consider utilizing this when users need to make straightforward decisions or select from several options.
-3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically.
-4. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_form", and "render_chat_bubble").
+You are an advanced AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication. You're equipped with these abilities:
 
 Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
@@ -70,7 +65,7 @@ const functions = [
   {
     name: "render_form",
     description:
-      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
+      "Creates a form to gather complex or multi-part information from the user systematically.",
     parameters: {
       type: "object",
       properties: {
@@ -237,7 +232,7 @@ const functions = [
         elements: {
           type: "array",
           description:
-            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
+            "This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function.",
           items: {
             type: "object",
             description: "A component to render.",
