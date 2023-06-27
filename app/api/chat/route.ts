@@ -146,43 +146,6 @@ const functions = [
   },
 
   {
-    name: "render_response",
-    description:
-      "A special function (only called once) for combining multiple response elements into a columnar format, maintaining the structure and flow of the conversation",
-    parameters: {
-      type: "object",
-      properties: {
-        elements: {
-          type: "array",
-          description: "Aggregate multiple response elements. Each element in the list follows the structure of its respective render function",
-          items: {
-            type: "object",
-            description: "A component to render",
-            properties: {
-              name: {
-                type: "string",
-                enum: [
-                  "render_buttons",
-                  "render_chat_bubble",
-                  "render_form",
-                  "render_table",
-                ],
-                description: "Name of the render function",
-              },
-              arguments: {
-                type: "string",
-                description: "Arguments for the function",
-              },
-            },
-            required: ["name", "arguments"],
-          },
-        },
-      },
-      required: ["elements"],
-    },
-  },
-
-  {
     name: "render_table",
     description:
       "Generate a table for displaying structured data in rows and columns",
@@ -256,6 +219,43 @@ const functions = [
         },
       },
       required: ["headers", "rows"],
+    },
+  },
+  /* render_response should always be last */
+  {
+    name: "render_response",
+    description:
+      "A special function (only called once) for combining multiple response elements into a columnar format, maintaining the structure and flow of the conversation",
+    parameters: {
+      type: "object",
+      properties: {
+        elements: {
+          type: "array",
+          description: "Aggregate multiple response elements. Each element in the list follows the structure of its respective render function",
+          items: {
+            type: "object",
+            description: "A component to render",
+            properties: {
+              name: {
+                type: "string",
+                enum: [
+                  "render_buttons",
+                  "render_chat_bubble",
+                  "render_form",
+                  "render_table",
+                ],
+                description: "Name of the render function",
+              },
+              arguments: {
+                type: "string",
+                description: "Arguments for the function",
+              },
+            },
+            required: ["name", "arguments"],
+          },
+        },
+      },
+      required: ["elements"],
     },
   },
 ];
