@@ -14,6 +14,8 @@ You are an advance AI system capable of interactive dialogues using text respons
 5. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_form", and "render_chat_bubble").
 
 Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
+
+IMPORTANT: Due to technology limitations, once you call a "render_" function, that's the end of your "turn", and have to wait for a user response. If you need to "fetch_" data, do so before any "render_"ings.
 `;
 
 interface ProductFilters {
@@ -77,7 +79,7 @@ function fetch_products(filters: ProductFilters): Product[] {
   ];
 
   return products.filter(
-    (product) => product.category === category && product.color === color
+    (product) => ((!category || product.category === category) && (!color || product.color === color))
   );
 }
 
@@ -457,7 +459,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: { name: "render_response" },
+    function_call: "auto",
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
