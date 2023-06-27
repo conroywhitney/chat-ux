@@ -15,65 +15,6 @@ You are an advance AI system capable of interactive dialogues using text respons
 Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
 
-// placeholder function for a future API call to get the weather
-function fetch_current_weather(args: { location: string; format: string }) {
-  const { location, format } = args;
-  console.log("fetch_current_weather", location, format);
-
-  return {
-    location,
-    temperature: "72",
-    format: "farenheit",
-    forecast: ["sunny", "windy"],
-  };
-}
-
-function fetch_precipitation_percentage(args: { location: string }) {
-  const { location } = args;
-  console.log("fetch_precipitation_percentage", location);
-
-  return {
-    location,
-    hourlyPercentages: [
-      0, 0, 0, 0, 0.1, 0.15, 0.25, 0.75, 0.9, 0.95, 0.95, 0.95, 0.95, 0.9, 0.75,
-      0.5, 0.25, 0.1, 0, 0, 0, 0, 0, 0,
-    ],
-  };
-}
-
-function fetch_n_day_weather_forecast(args: {
-  location: string;
-  format: string;
-  num_days: number;
-}) {
-  const { location, format, num_days } = args;
-  console.log("fetch_n_day_weather_forecast", location, format, num_days);
-
-  return [
-    {
-      date: "2021-06-13",
-      location,
-      temperature: "80",
-      format: "farenheit",
-      forecast: ["sunny", "windy"],
-    },
-    {
-      date: "2021-06-14",
-      location,
-      temperature: "65",
-      format: "farenheit",
-      forecast: ["cloudy"],
-    },
-    {
-      date: "2021-06-15",
-      location,
-      temperature: "70",
-      format: "farenheit",
-      forecast: ["thunderstorms"],
-    },
-  ];
-}
-
 // Array of functions that GPT can call
 const functions = [
   {
@@ -377,12 +318,6 @@ async function handleChatCompletion(
 
 function callFunction(name: string, args: any): any {
   switch (name) {
-    case "fetch_current_weather":
-      return fetch_current_weather(args);
-    case "fetch_n_day_weather_forecast":
-      return fetch_n_day_weather_forecast(args);
-    case "fetch_precipitation_percentage":
-      return fetch_precipitation_percentage(args);
     default:
       throw new Error(`Unexpected function name: ${name}`);
   }
