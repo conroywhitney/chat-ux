@@ -232,7 +232,7 @@ const functions = [
             properties: {
               id: {
                 type: "string",
-                description: "A unique identifier for the row.",
+                description: "A unique identifier for this row (table + row).",
               },
               columns: {
                 type: "array",
@@ -240,6 +240,11 @@ const functions = [
                 items: {
                   type: "object",
                   properties: {
+                    id: {
+                      type: "string",
+                      description:
+                        "A unique identifier for the cell (table + row + column).",
+                    },
                     header: {
                       type: "string",
                       description:
@@ -255,12 +260,12 @@ const functions = [
               },
               detailsButton: {
                 type: "object",
-                description: "The details button for this row.",
+                description: "(Optional) The details button for this row.",
                 properties: {
                   id: {
                     type: "string",
                     description:
-                      "A unique identifier for the button so when it's clicked, it's obvious which table and row was clicked.",
+                      "A unique identifier for the button for when it's clicked (table + row + 'details').",
                   },
                   label: {
                     type: "string",

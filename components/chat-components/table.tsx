@@ -64,11 +64,16 @@ This component is called by the GPT model to render a table with headers and one
 */
 interface ColumnArgs {
   header: string;
+  id: string;
   value: string;
 }
 
+interface HeaderArgs {
+  header: string;
+  tableId: string;
+}
+
 interface RowArgs {
-  id: string;
   columns: ColumnArgs[];
   detailsButton?: {
     id: string;
@@ -76,6 +81,8 @@ interface RowArgs {
     value: string;
   };
   headers: string[];
+  id: string;
+  tableId: string;
   onClick: ({ id, value }: { id: string; value: string }) => void;
 }
 
@@ -86,29 +93,51 @@ interface TableArgs {
   onClick: ({ id, value }: { id: string; value: string }) => void;
 }
 
-const renderHeader = (header: string) => {
-  console.log("renderHeader", header);
+const renderHeader = (args: HeaderArgs) => {
+  const { header, tableId } = args;
+  const headerId = `${tableId}-header-${header}`;
 
-  return <span key={header}>{header}</span>;
+  return (
+    <span
+      id={headerId}
+      key={headerId}
+    >
+      {header}
+    </span>
+  );
 };
 
-const renderRow = (
-  id: string,
-  headers: string[],
-  columnMap: Map<string, any>,
-  detailsButton?: any,
-  onClick?: any
-) => {
-  const elements = headers.map((header: string, index: number) => (
-    <div key={`${id}-${header}`}>{columnMap.get(header)}</div>
-  ));
+const renderRow = (args: RowArgs) => {
+  const { columns, detailsButton, headers, id, tableId, onClick } = args;
+  const columnMap = new Map(columns.map(column => [column.header, { id: column.id, value: column.value }]));
+  const rowId = `${tableId}-row-${id}`;
+
+  const elements = headers.map((header: string) => {
+    const column = columnMap.get(header);
+
+    if (!column) return <></>;
+
+    const colId = `${rowId}-col-${column.id}`;
+
+    return (
+      <div
+        id={colId}
+        key={colId}
+      >
+        {column.value}
+      </div>
+    );
+  });
 
   if (detailsButton) {
+    const detailsId = `${rowId}-details-${detailsButton.id}`;
+
     elements.push(
       <DaisyButton
-        key={`details-${id}`}
+        id={detailsId}
+        key={detailsId}
         onClick={() =>
-          onClick?.({ id: detailsButton.id, value: detailsButton.value })
+          onClick?.({ id: detailsId, value: detailsButton.value })
         }
       >
         {detailsButton.label}
@@ -120,31 +149,37 @@ const renderRow = (
 };
 
 const renderRows = (args: RowArgs): JSX.Element => {
-  const { id, columns, detailsButton, headers, onClick } = args;
-  const columnMap = new Map(
-    columns.map(column => [column.header, column.value])
-  );
+  const { id, columns, detailsButton, headers, tableId, onClick } = args;
+  const rowId = `${tableId}-row-${id}`;
 
   return (
-    <DaisyTable.Row key={`row-${id}`}>
-      {renderRow(id, headers, columnMap, detailsButton, onClick)}
+    <DaisyTable.Row
+      id={rowId}
+      key={rowId}
+    >
+      {renderRow({ columns, detailsButton, headers, id, tableId, onClick })}
     </DaisyTable.Row>
   );
 };
 
 const renderTable = (args: TableArgs) => {
-  console.log("renderTable", args);
   const { id, headers, rows, onClick } = args;
+  const tableId = `table-${id}`;
 
   return (
     <div className="overflow-x-auto">
       <DaisyTable
-        id={id}
+        id={tableId}
+        key={tableId}
         className="rounded-box"
       >
-        <DaisyTable.Head>{headers.map(renderHeader)}</DaisyTable.Head>
+        <DaisyTable.Head>
+          {headers.map(header => renderHeader({ header, tableId }))}
+        </DaisyTable.Head>
         <DaisyTable.Body>
-          {rows.map((row: RowArgs) => renderRows({ ...row, headers, onClick }))}
+          {rows.map((row: RowArgs) =>
+            renderRows({ ...row, headers, tableId, onClick })
+          )}
         </DaisyTable.Body>
       </DaisyTable>
     </div>
