@@ -15,6 +15,66 @@ You are an advance AI system capable of interactive dialogues using text respons
 Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
 
+interface ProductFilters {
+  category: string;
+  color: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  color: string;
+}
+
+function fetch_products(filters: ProductFilters): Product[] {
+  const { category, color } = filters;
+  console.log("fetch_products", category, color);
+
+  const products = [
+    {
+      id: "1",
+      name: "Product 1",
+      price: 100,
+      category: "Category 1",
+      color: "red",
+    },
+    {
+      id: "2",
+      name: "Product 2",
+      price: 200,
+      category: "Category 2",
+      color: "blue",
+    },
+    {
+      id: "3",
+      name: "Product 3",
+      price: 300,
+      category: "Category 3",
+      color: "green",
+    },
+    {
+      id: "4",
+      name: "Product 4",
+      price: 400,
+      category: "Category 1",
+      color: "blue",
+    },
+    {
+      id: "5",
+      name: "Product 5",
+      price: 500,
+      category: "Category 2",
+      color: "red",
+    },
+  ];
+
+  return products.filter(
+    (product) => product.category === category && product.color === color
+  );
+}
+
 // placeholder function for a future API call to get the weather
 function fetch_current_weather(args: { location: string; format: string }) {
   const { location, format } = args;
@@ -76,6 +136,56 @@ function fetch_n_day_weather_forecast(args: {
 
 // Array of functions that GPT can call
 const functions = [
+  {
+    name: "fetch_products",
+    description:
+      "Fetch a list of products based on the provided filters. The filters are optional, and if not provided, the function returns all products.",
+    parameters: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "The category of products to fetch.",
+          enum: ["Category 1", "Category 2", "Category 3"]
+        },
+        color: {
+          type: "string",
+          description: "The color of products to fetch.",
+          enum: ["red", "blue", "green"]
+        }
+      }
+    },
+    required: [],
+    returns: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "The unique identifier of the product.",
+          },
+          name: {
+            type: "string",
+            description: "The name of the product.",
+          },
+          price: {
+            type: "number",
+            description: "The price of the product.",
+          },
+          category: {
+            type: "string",
+            description: "The category of the product.",
+          },
+          color: {
+            type: "string",
+            description: "The color of the product.",
+          },
+        }
+      }
+    },
+  },
+
   {
     name: "render_buttons",
     description:
@@ -377,6 +487,8 @@ async function handleChatCompletion(
 
 function callFunction(name: string, args: any): any {
   switch (name) {
+    case "fetch_products":
+      return fetch_products(args);
     case "fetch_current_weather":
       return fetch_current_weather(args);
     case "fetch_n_day_weather_forecast":
