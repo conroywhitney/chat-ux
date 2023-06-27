@@ -5,40 +5,40 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-You are an advanced AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication. You're equipped with these abilities:
-
-Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
+Enhance user engagement by creatively using text and UI elements in your responses.
+Deploy the abilities from the "functions" section to provide richer interactions.
+Use "render_response" to amalgamate text and UI elements.
+Maintain flow and dynamism in the dialogue.
 `;
 
-// Array of functions that GPT can call
 const functions = [
   {
     name: "render_buttons",
     description:
-      "Create a row of one or more interactive buttons. Essentially useful for responses requiring user's choice among multiple options.",
+      "Display a row of interactive buttons; useful for user's choice from multiple options",
     parameters: {
       type: "object",
       properties: {
         elements: {
-          description: "One or more button(s) to render.",
+          description:
+            "Array of button(s) to render, with descriptive ID, label, value, and color",
           type: "array",
           items: {
             type: "object",
-            description: "A button to render.",
+            description: "A button to render",
             properties: {
               id: {
                 type: "string",
                 description:
-                  "A unique identifier per button; matches the return value when this button is clicked.",
+                  "Sensible identifier per button; maps to return value when clicked",
               },
               label: {
                 type: "string",
-                description: "The display text on the button.",
+                description: "Display text on the button",
               },
               value: {
                 type: "string",
-                description:
-                  "The return value when the corresponding button is clicked.",
+                description: "Return value when the button is clicked",
               },
               colorTheme: {
                 type: "string",
@@ -52,7 +52,7 @@ const functions = [
                   "success",
                   "warning",
                 ],
-                description: "The theme color of the button.",
+                description: "Theme color of the button",
               },
             },
             required: ["id", "label", "value", "colorTheme"],
@@ -62,54 +62,67 @@ const functions = [
       required: ["elements"],
     },
   },
+
+  {
+    name: "render_chat_bubble",
+    description:
+      "Show a text message for non-interactive information, instructions, or responses",
+    parameters: {
+      type: "object",
+      properties: {
+        value: {
+          type: "string",
+          description: "Content of the text message",
+        },
+      },
+      required: ["value"],
+    },
+  },
+
   {
     name: "render_form",
     description:
-      "Creates a form to gather complex or multi-part information from the user systematically.",
+      "Create a form for systematic collection of complex user data",
     parameters: {
       type: "object",
       properties: {
         id: {
           type: "string",
-          description:
-            "A unique identifier to match the return value to this form.",
+          description: "Descriptive identifier of the form",
         },
         elements: {
           type: "array",
-          description:
-            "Form elements to render, including inputs, textareas, checkboxes, radios, select dropdowns, and more.",
+          description: "Array of form elements with descriptive ID",
           items: {
             type: "object",
             properties: {
               id: {
                 type: "string",
-                description:
-                  "Unique ID to match return value to this form element.",
+                description: "Descriptive identifier for this form element",
               },
               label: {
                 type: "string",
-                description: "Label displayed for this form element.",
+                description: "Displayed label for this form element",
               },
               type: {
                 type: "string",
-                enum: ["input", "textarea", "select", "checkboxes", "radio"],
-                description: "Type of the form element.",
+                enum: ["checkboxes", "input", "radio", "select", "textarea"],
+                description: "Type of the form element",
               },
               options: {
                 type: "array",
                 description:
-                  "(Optional) For types selects or checkboxes, the options available to select.",
+                  "(Optional) Available options for select or checkboxes type form elements",
                 items: {
                   type: "object",
                   properties: {
                     label: {
                       type: "string",
-                      description: "The label text to display for the option.",
+                      description: "Displayed label for the option",
                     },
                     value: {
                       type: "string",
-                      description:
-                        "The value to return if this option is selected.",
+                      description: "Return value if this option is selected",
                     },
                   },
                   required: ["label", "value"],
@@ -121,74 +134,90 @@ const functions = [
         },
         submitLabel: {
           type: "string",
-          description: "Text to display on the form's submit button.",
+          description: "Form's submit button text",
         },
       },
     },
   },
+
   {
-    name: "render_chat_bubble",
+    name: "render_response",
     description:
-      "Displays a textual message. Use for providing information, instructions, or responses that don't require user interaction.",
+      "Bundle multiple response components into a columnar format for user-friendly viewing",
     parameters: {
       type: "object",
       properties: {
-        value: {
-          type: "string",
-          description: "The content of the plaintext message.",
+        elements: {
+          type: "array",
+          description: "Aggregate multiple response elements",
+          items: {
+            type: "object",
+            description: "A component to render",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["render_buttons", "render_chat_bubble", "render_form", "render_table"],
+                description: "Name of the render function",
+              },
+              arguments: {
+                type: "string",
+                description: "Arguments for the function",
+              },
+            },
+            required: ["name", "arguments"],
+          },
         },
       },
-      required: ["value"],
+      required: ["elements"],
     },
   },
+
   {
     name: "render_table",
     description:
-      "Generates a data table. Ideal for displaying structured data set in rows and columns format.",
+      "Generate a table for displaying structured data in rows and columns",
     parameters: {
       type: "object",
       properties: {
         id: {
           type: "string",
-          description: "A unique identifier for the table.",
+          description: "Descriptive identifier for the table",
         },
         headers: {
-          description: "The column headers for the table.",
+          description: "Column headers",
           type: "array",
           items: {
             type: "string",
           },
         },
         rows: {
-          description:
-            "Data to populate the table's rows. Each element in the array represents a row.",
+          description: "Table data",
           type: "array",
           items: {
             type: "object",
             properties: {
               id: {
                 type: "string",
-                description: "A unique identifier for this row (table + row).",
+                description: "Descriptive identifier for this row",
               },
               columns: {
                 type: "array",
-                description: "The column data for each header in this row.",
+                description: "Column data for each header in this row",
                 items: {
                   type: "object",
                   properties: {
                     id: {
                       type: "string",
-                      description:
-                        "A unique identifier for the cell (table + row + column).",
+                      description: "Descriptive identifier for this cell",
                     },
                     header: {
                       type: "string",
                       description:
-                        "The header this column value corresponds to.",
+                        "Corresponding header for this column value",
                     },
                     value: {
                       type: "string",
-                      description: "The value to display for this column.",
+                      description: "Display value for this column",
                     },
                   },
                   required: ["header", "value"],
@@ -196,21 +225,19 @@ const functions = [
               },
               detailsButton: {
                 type: "object",
-                description: "(Optional) The details button for this row.",
+                description: "(Optional) Details button for this row",
                 properties: {
                   id: {
                     type: "string",
-                    description:
-                      "A unique identifier for the button for when it's clicked (table + row + 'details').",
+                    description: "Descriptive identifier for details button",
                   },
                   label: {
                     type: "string",
-                    description: "The label for the details button.",
+                    description: "Label for details button",
                   },
                   value: {
                     type: "string",
-                    description:
-                      "The value to return when the details button is clicked.",
+                    description: "Return value when details button is clicked",
                   },
                 },
               },
@@ -220,38 +247,6 @@ const functions = [
         },
       },
       required: ["headers", "rows"],
-    },
-  },
-  {
-    name: "render_response",
-    description:
-      "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
-    parameters: {
-      type: "object",
-      properties: {
-        elements: {
-          type: "array",
-          description:
-            "This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function.",
-          items: {
-            type: "object",
-            description: "A component to render.",
-            properties: {
-              name: {
-                type: "string",
-                enum: ["render_buttons", "render_form", "render_chat_bubble"],
-                description: "The name of the render function.",
-              },
-              arguments: {
-                type: "string",
-                description: "The arguments to pass to the function.",
-              },
-            },
-            required: ["name", "arguments"],
-          },
-        },
-      },
-      required: ["elements"],
     },
   },
 ];
