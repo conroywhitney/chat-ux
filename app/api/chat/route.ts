@@ -37,6 +37,7 @@ function fetch_products(filters: ProductFilters): Product[] {
     {
       id: "1",
       name: "Product 1",
+      description: "This product is great!",
       price: 100,
       category: "Category 1",
       color: "red",
@@ -44,6 +45,7 @@ function fetch_products(filters: ProductFilters): Product[] {
     {
       id: "2",
       name: "Product 2",
+      description: "This product is also great!",
       price: 200,
       category: "Category 2",
       color: "blue",
@@ -51,6 +53,7 @@ function fetch_products(filters: ProductFilters): Product[] {
     {
       id: "3",
       name: "Product 3",
+      description: "This product is better than the others!",
       price: 300,
       category: "Category 3",
       color: "green",
@@ -58,6 +61,7 @@ function fetch_products(filters: ProductFilters): Product[] {
     {
       id: "4",
       name: "Product 4",
+      description: "This product is better yet!",
       price: 400,
       category: "Category 1",
       color: "blue",
@@ -65,6 +69,7 @@ function fetch_products(filters: ProductFilters): Product[] {
     {
       id: "5",
       name: "Product 5",
+      description: "This product is the absolute best!",
       price: 500,
       category: "Category 2",
       color: "red",
@@ -240,7 +245,7 @@ const functions = [
   {
     name: "render_form",
     description:
-      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
+      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained. Especially useful for providing filter options before fetching data.",
     parameters: {
       type: "object",
       properties: {
