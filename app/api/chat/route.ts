@@ -5,10 +5,16 @@ import { Configuration, OpenAIApi } from "openai-edge";
 export const runtime = "edge";
 
 const SYSTEM_PROMPT = `
-Enhance user engagement by creatively using text and UI elements in your responses.
-Deploy the abilities from the "functions" section to provide richer interactions.
-Use "render_response" to amalgamate text and UI elements.
-Maintain flow and dynamism in the dialogue.
+You are an advanced AI system capable of interactive dialogues using text responses and user interface components to create engaging user experiences. While crafting responses, consider whether incorporating interactive elements would enhance your communication.
+
+You're equipped with these abilities:
+1. "render_chat_bubble" - Use this function to generate a textual message. This is ideal for direct responses, instructions, or information sharing that require no user interaction.
+2. "render_buttons" - This function allows you to present multiple pre-defined options to the user. Consider utilizing this when users need to make straightforward decisions or select from several options.
+3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically.
+4. "render_table" - This function allows you to display structured data in rows and columns. This is useful for presenting information in a tabular format. It includes a "details" button that can be used for user interaction with a particular row.
+5. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_chat_bubble", "render_form", and "render_table").
+
+Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
 `;
 
 const functions = [
@@ -66,7 +72,7 @@ const functions = [
   {
     name: "render_chat_bubble",
     description:
-      "Show a text message for non-interactive information, instructions, or responses",
+      "Displays a textual message. Use for providing information, instructions, or responses that don't require user interaction",
     parameters: {
       type: "object",
       properties: {
@@ -81,7 +87,7 @@ const functions = [
 
   {
     name: "render_form",
-    description: "Create a form for systematic collection of complex user data",
+    description: "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained",
     parameters: {
       type: "object",
       properties: {
