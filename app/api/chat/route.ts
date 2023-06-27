@@ -81,8 +81,7 @@ const functions = [
 
   {
     name: "render_form",
-    description:
-      "Create a form for systematic collection of complex user data",
+    description: "Create a form for systematic collection of complex user data",
     parameters: {
       type: "object",
       properties: {
@@ -112,7 +111,7 @@ const functions = [
               options: {
                 type: "array",
                 description:
-                  "(Optional) Available options for select or checkboxes type form elements",
+                  "(Optional) Available options for checkboxes, radio lists, or select dropdowns. Does not apply to text input",
                 items: {
                   type: "object",
                   properties: {
@@ -156,7 +155,12 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_buttons", "render_chat_bubble", "render_form", "render_table"],
+                enum: [
+                  "render_buttons",
+                  "render_chat_bubble",
+                  "render_form",
+                  "render_table",
+                ],
                 description: "Name of the render function",
               },
               arguments: {
@@ -212,8 +216,7 @@ const functions = [
                     },
                     header: {
                       type: "string",
-                      description:
-                        "Corresponding header for this column value",
+                      description: "Corresponding header for this column value",
                     },
                     value: {
                       type: "string",
