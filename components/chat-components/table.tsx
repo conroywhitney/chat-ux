@@ -92,24 +92,30 @@ const renderHeader = (header: string) => {
   return <span key={header}>{header}</span>;
 };
 
-const renderRow = (id: string, headers: string[], columnMap: Map<string, any>, detailsButton?: any, onClick?: any) => {
+const renderRow = (
+  id: string,
+  headers: string[],
+  columnMap: Map<string, any>,
+  detailsButton?: any,
+  onClick?: any
+) => {
   const elements = headers.map((header: string, index: number) => (
-    <div key={`${id}-${header}`}>
-      {columnMap.get(header)}
-    </div>
+    <div key={`${id}-${header}`}>{columnMap.get(header)}</div>
   ));
 
   if (detailsButton) {
     elements.push(
       <DaisyButton
         key={`details-${id}`}
-        onClick={() => onClick?.({ id: detailsButton.id, value: detailsButton.value })}
+        onClick={() =>
+          onClick?.({ id: detailsButton.id, value: detailsButton.value })
+        }
       >
         {detailsButton.label}
       </DaisyButton>
     );
   }
-  
+
   return elements;
 };
 
@@ -118,7 +124,7 @@ const renderRows = (args: RowArgs): JSX.Element => {
   const columnMap = new Map(
     columns.map(column => [column.header, column.value])
   );
-  
+
   return (
     <DaisyTable.Row key={`row-${id}`}>
       {renderRow(id, headers, columnMap, detailsButton, onClick)}
