@@ -142,13 +142,13 @@ const functions = [
   {
     name: "render_response",
     description:
-      "Bundle multiple response components into a columnar format for user-friendly viewing",
+      "A special function (only called once) for combining multiple response elements into a columnar format, maintaining the structure and flow of the conversation",
     parameters: {
       type: "object",
       properties: {
         elements: {
           type: "array",
-          description: "Aggregate multiple response elements",
+          description: "Aggregate multiple response elements. Each element in the list follows the structure of its respective render function",
           items: {
             type: "object",
             description: "A component to render",
