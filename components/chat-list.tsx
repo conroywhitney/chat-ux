@@ -39,7 +39,9 @@ const renderComponent = ({
         </div>
       );
     } else {
-      const componentName = name.replace("render_", "");
+      const componentName = name
+        .replace("functions.render_", "")
+        .replace("render_", "");
       const Component =
         require(`@/components/chat-components/${componentName}`).default;
       const componentArgs: ComponentArgs = JSON.parse(args);

@@ -206,6 +206,87 @@ const functions = [
     },
   },
   {
+    name: "render_table",
+    description:
+      "Generates a data table. Ideal for displaying structured data set in rows and columns format.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: {
+          type: "string",
+          description: "A unique identifier for the table.",
+        },
+        headers: {
+          description: "The column headers for the table.",
+          type: "array",
+          items: {
+            type: "string",
+          },
+        },
+        rows: {
+          description:
+            "Data to populate the table's rows. Each element in the array represents a row.",
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "A unique identifier for this row (table + row).",
+              },
+              columns: {
+                type: "array",
+                description: "The column data for each header in this row.",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description:
+                        "A unique identifier for the cell (table + row + column).",
+                    },
+                    header: {
+                      type: "string",
+                      description:
+                        "The header this column value corresponds to.",
+                    },
+                    value: {
+                      type: "string",
+                      description: "The value to display for this column.",
+                    },
+                  },
+                  required: ["header", "value"],
+                },
+              },
+              detailsButton: {
+                type: "object",
+                description: "(Optional) The details button for this row.",
+                properties: {
+                  id: {
+                    type: "string",
+                    description:
+                      "A unique identifier for the button for when it's clicked (table + row + 'details').",
+                  },
+                  label: {
+                    type: "string",
+                    description: "The label for the details button.",
+                  },
+                  value: {
+                    type: "string",
+                    description:
+                      "The value to return when the details button is clicked.",
+                  },
+                },
+              },
+            },
+            required: ["id", "columns"],
+          },
+        },
+      },
+      required: ["headers", "rows"],
+    },
+  },
+  {
     name: "render_response",
     description:
       "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
