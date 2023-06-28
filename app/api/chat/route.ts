@@ -405,15 +405,15 @@ const functions = [
     },
   },
   {
-    name: "fetch_or_render",
+    name: "render_and_fetch",
     description:
-      "The function to bundle various fetch requests or rendering of components into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
+      "The function to bundle various fetch requests and/or rendering of components into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
     parameters: {
       type: "object",
       properties: {
         fetchFunctions: {
           type: "array",
-          description: "Array of the different fetch functions to call before rendering the output. Each item in the array follows the structure of its respective fetch function (fetch_products).",
+          description: "(Optional) Array of the different fetch functions to call before rendering the output. Each item in the array follows the structure of its respective fetch function (fetch_products).",
           items: {
             type: "object",
             properties: {
@@ -433,7 +433,7 @@ const functions = [
         renderFunctions: {
           type: "array",
           description:
-            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
+            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_chat_bubble, render_form, and/or render_table).",
           items: {
             type: "object",
             description: "A component to render.",
@@ -457,7 +457,7 @@ const functions = [
   },
 ];
 
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<String> {
   const json = await req.json();
   const { messages } = json;
 
@@ -469,8 +469,8 @@ async function handleChatCompletion(
   functions: any[],
   model: string,
   depth: number
-): Promise<StreamingTextResponse> {
-  if (depth >= 10) throw new Error("Maximum recursion depth reached");
+): Promise<String> {
+  if (depth >= 3) throw new Error("Maximum recursion depth reached");
 
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -478,7 +478,7 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: "auto",
+    function_call: "render_and_fetch",
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
@@ -491,15 +491,30 @@ async function handleChatCompletion(
 
   if (function_call && function_call.name == "fetch_and_render") {
     const fetchFunctions = function_call.arguments.fetchFunctions || [];
+    const renderFunctions = function_call.arguments.renderFunctions || [];
     const newMessages = messages;
 
+    if (renderFunctions.length > 0) {
+      renderFunctions.each((renderFunction: any) => {
+        newMessages.push(
+          {
+            role: "assistant",
+            function_call: {
+              name: renderFunction.name.replace("functions.", ""),
+              arguments: renderFunction.arguments,
+            }
+          }
+        )
+      });
+    };
+
     if (fetchFunctions.length > 0) {
-      fetchFunctions.each((fetchFunction: any) => {
+      fetchFunctions.each(async (fetchFunction: any) => {
         newMessages.push(
           {
             role: "function",
             name: fetchFunction.name,
-            content: callFunction(
+            content: await callFunction(
               fetchFunction.name.replace("functions.", ""),
               JSON.parse(fetchFunction.arguments)
             )
@@ -510,7 +525,7 @@ async function handleChatCompletion(
       return await handleChatCompletion(newMessages, functions, model, depth + 1);
     } else {
       // No more fetch functions, so render the output
-      return new StreamingTextResponse(message);
+      return JSON.stringify({ messages: newMessages });
     }
   } else {
     console.log("handleChatCompletion", "error", "Should have called fetch_and_render", message);
@@ -518,7 +533,7 @@ async function handleChatCompletion(
   }
 }
 
-function callFunction(name: string, args: any): any {
+async function callFunction(name: string, args: any): any {
   switch (name) {
     case "fetch_products":
       return fetch_products(args);
