@@ -18,12 +18,12 @@ export interface ChatList {
 
 const renderComponent = ({
   name,
-  arguments: args,
+  args,
   handleClick,
   handleSubmit,
 }: {
   name: string;
-  arguments: string;
+  args: string;
   handleClick: ({ id, value }: { id: string; value: string }) => void;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) => {
@@ -61,26 +61,31 @@ const renderComponent = ({
 };
 
 const renderMessage = (
-  message: Message,
+  message: any,
   handleClick: ({ id, value }: { id: string; value: string }) => void,
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 ) => {
-  const { content, role } = message;
-  const isComponent = content.includes("render_");
+  let parsedMessage = message;
+  try { parsedMessage = JSON.parse(message.content); } catch (error) {};
+
+  const { content, role, function_call } = parsedMessage;
+  const { name, arguments: args } = function_call || {};
+  const isComponent = name?.includes("render_") || false;
+
+  console.log("renderMessage", parsedMessage, isComponent);
 
   return (
     <div
-      key={message.id}
+      key={parsedMessage.id}
       className="py-4"
     >
-      {isComponent &&
-        renderComponent({ ...JSON.parse(content), handleClick, handleSubmit })}
-      {!isComponent && (
+      {content && (
         <ChatBubble
           value={content}
           user={role == "user"}
         />
       )}
+      {isComponent && renderComponent({ name, args, handleClick, handleSubmit })}
     </div>
   );
 };

@@ -469,12 +469,12 @@ async function handleChatCompletion(
   const result = await response.json();
   console.log("result", result);
 
-  const { finish_reason, message } = result.choices[0];
+  const { message } = result.choices[0];
 
-  if (message.function_call.name.startsWith("render_")) {
+  if (!message.function_call || message.function_call.name.startsWith("render_")) {
     console.log("rendering", message);
     // @ts-ignore
-    return new StreamingTextResponse(JSON.stringify(message.function_call));
+    return new StreamingTextResponse(JSON.stringify(message));
   } else {
     const functionResult = callFunction(
       message.function_call.name.replace("functions.", ""),
