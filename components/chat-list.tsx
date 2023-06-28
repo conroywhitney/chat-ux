@@ -140,7 +140,7 @@ export function ChatList({ append, messages }: ChatList) {
 
   if (!messages.length) return null;
 
-  console.log("ChatList", "messages", messages)
+  console.log("ChatList", "messages", messages);
 
   return (
     <div className="relative mx-auto max-w-2xl px-4">

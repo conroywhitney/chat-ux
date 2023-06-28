@@ -524,7 +524,7 @@ async function handleChatCompletion(
     if (renderFunctions.length > 0) {
       console.log("handleChatCompletion", "renderFunctions", renderFunctions);
 
-      for(const renderFunction of renderFunctions) {
+      for (const renderFunction of renderFunctions) {
         newMessages.push({
           role: "assistant",
           function_call: {
@@ -532,13 +532,13 @@ async function handleChatCompletion(
             arguments: renderFunction.arguments,
           },
         });
-      };
+      }
     }
 
     if (fetchFunctions.length > 0) {
       console.log("handleChatCompletion", "fetchFunctions", fetchFunctions);
 
-      for(const fetchFunction of fetchFunctions) {
+      for (const fetchFunction of fetchFunctions) {
         newMessages.push({
           role: "function",
           name: fetchFunction.name,
@@ -547,7 +547,7 @@ async function handleChatCompletion(
             JSON.parse(fetchFunction.arguments)
           ),
         });
-      };
+      }
 
       console.log(
         "handleChatCompletion",
@@ -564,9 +564,17 @@ async function handleChatCompletion(
       );
     } else {
       // No more fetch functions, so render the output
-      console.log("handleChatCompletion", "no new fetch functions", "newMessages", newMessages);
-      // @ts-ignore
-      return new StreamingTextResponse(JSON.stringify({ messages: newMessages }));
+      console.log(
+        "handleChatCompletion",
+        "no new fetch functions",
+        "newMessages",
+        newMessages
+      );
+
+      return new StreamingTextResponse(
+        // @ts-ignore
+        JSON.stringify({ messages: newMessages })
+      );
     }
   } else {
     console.log(
