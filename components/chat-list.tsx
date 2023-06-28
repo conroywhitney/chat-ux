@@ -89,21 +89,26 @@ const renderMessage = (
 
   console.log("renderMessage 3", parsedMessage, isComponent);
 
-  return (
-    <div
-      key={parsedMessage.id}
-      className="py-4"
-    >
-      {content && (
-        <ChatBubble
-          value={content}
-          user={role == "user"}
-        />
-      )}
-      {isComponent &&
-        renderComponent({ name, args, handleClick, handleSubmit })}
-    </div>
-  );
+  const { messages } = parsedMessage;
+  if (messages) {
+    return messages.map((message: any) => renderMessage(message, handleClick, handleSubmit));
+  } else {
+    return (
+      <div
+        key={parsedMessage.id}
+        className="py-4"
+      >
+        {content && (
+          <ChatBubble
+            value={content}
+            user={role == "user"}
+          />
+        )}
+        {isComponent &&
+          renderComponent({ name, args, handleClick, handleSubmit })}
+      </div>
+    );
+  }
 };
 
 export function ChatList({ append, messages }: ChatList) {
