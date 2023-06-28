@@ -91,7 +91,9 @@ const renderMessage = (
 
   const { messages } = parsedMessage;
   if (messages) {
-    return messages.map((message: any) => renderMessage(message, handleClick, handleSubmit));
+    return messages.map((message: any) =>
+      renderMessage(message, handleClick, handleSubmit)
+    );
   } else {
     return (
       <div

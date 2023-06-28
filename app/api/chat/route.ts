@@ -542,10 +542,10 @@ async function handleChatCompletion(
         newMessages.push({
           role: "function",
           name: fetchFunction.name,
-          content: await callFunction(
+          content: JSON.stringify(await callFunction(
             fetchFunction.name.replace("functions.", ""),
-            JSON.parse(fetchFunction.arguments)
-          ),
+            fetchFunction.arguments && fetchFunction.arguments.length > 0 ? JSON.parse(fetchFunction.arguments) : {}
+          )),
         });
       }
 
