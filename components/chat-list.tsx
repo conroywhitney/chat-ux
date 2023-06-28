@@ -66,7 +66,9 @@ const renderMessage = (
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 ) => {
   let parsedMessage = message;
-  try { parsedMessage = JSON.parse(message.content); } catch (error) {};
+  try {
+    parsedMessage = JSON.parse(message.content);
+  } catch (error) {}
 
   console.log("renderMessage 1", parsedMessage);
 
@@ -76,7 +78,7 @@ const renderMessage = (
       parsedMessage = JSON.parse(message.content);
     } catch (error) {
       console.log("renderMessage error", error);
-    };
+    }
 
     console.log("renderMessage 2", parsedMessage);
   }
@@ -98,7 +100,8 @@ const renderMessage = (
           user={role == "user"}
         />
       )}
-      {isComponent && renderComponent({ name, args, handleClick, handleSubmit })}
+      {isComponent &&
+        renderComponent({ name, args, handleClick, handleSubmit })}
     </div>
   );
 };
