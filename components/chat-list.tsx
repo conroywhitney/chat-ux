@@ -68,11 +68,24 @@ const renderMessage = (
   let parsedMessage = message;
   try { parsedMessage = JSON.parse(message.content); } catch (error) {};
 
+  console.log("renderMessage 1", parsedMessage);
+
+  if (parsedMessage.content?.includes("function_call")) {
+    parsedMessage = parsedMessage.content;
+    try {
+      parsedMessage = JSON.parse(message.content);
+    } catch (error) {
+      console.log("renderMessage error", error);
+    };
+
+    console.log("renderMessage 2", parsedMessage);
+  }
+
   const { content, role, function_call } = parsedMessage;
   const { name, arguments: args } = function_call || {};
   const isComponent = name?.includes("render_") || false;
 
-  console.log("renderMessage", parsedMessage, isComponent);
+  console.log("renderMessage 3", parsedMessage, isComponent);
 
   return (
     <div
