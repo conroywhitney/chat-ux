@@ -405,13 +405,32 @@ const functions = [
     },
   },
   {
-    name: "render_response",
+    name: "fetch_or_render",
     description:
-      "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
+      "The function to bundle various fetch requests or rendering of components into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
     parameters: {
       type: "object",
       properties: {
-        elements: {
+        fetchFunctions: {
+          type: "array",
+          description: "Array of the different fetch functions to call before rendering the output. Each item in the array follows the structure of its respective fetch function (fetch_products).",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["fetch_products"],
+                description: "The name of the fetch function to call.",
+              },
+              arguments: {
+                type: "string",
+                description: "The arguments to pass to the fetch function.",
+              }
+            },
+            required: ["name", "arguments"],
+          }
+        },
+        renderFunctions: {
           type: "array",
           description:
             "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
@@ -421,19 +440,19 @@ const functions = [
             properties: {
               name: {
                 type: "string",
-                enum: ["render_buttons", "render_form", "render_chat_bubble"],
+                enum: ["render_buttons", "render_chat_bubble", "render_form", "render_table"],
                 description: "The name of the render function.",
               },
               arguments: {
                 type: "string",
-                description: "The arguments to pass to the function.",
+                description: "The arguments to pass to the function (per the function's definition).",
               },
             },
             required: ["name", "arguments"],
           },
         },
       },
-      required: ["elements"],
+      required: [],
     },
   },
 ];
@@ -467,29 +486,37 @@ async function handleChatCompletion(
   });
 
   const result = await response.json();
-  console.log("result", result);
-
   const { message } = result.choices[0];
+  const { function_call } = message;
 
-  if (!message.function_call || message.function_call.name.startsWith("render_")) {
-    console.log("rendering", message);
-    // @ts-ignore
-    return new StreamingTextResponse(JSON.stringify(message));
+  if (function_call && function_call.name == "fetch_and_render") {
+    const fetchFunctions = function_call.arguments.fetchFunctions || [];
+    const renderFunctions = function_call.arguments.renderFunctions || [];
+
+    if (fetchFunctions.length > 0) {
+      // Call fetch functions then re-run the chat completion
+      const fetchResults = await Promise.all(
+        fetchFunctions.map((fetchFunction: any) => (
+          {
+            role: "function",
+            name: fetchFunction.name,
+            content: callFunction(
+              fetchFunction.name.replace("functions.", ""),
+              JSON.parse(fetchFunction.arguments)
+            )
+          }
+        ))
+      ) || [];
+
+      const newMessages = messages.concat(fetchResults);
+      return handleChatCompletion(newMessages, functions, model, depth + 1);
+    } else {
+      // No more fetch functions, so render the output
+      return new StreamingTextResponse(JSON.stringify(message));
+    }
   } else {
-    const functionResult = callFunction(
-      message.function_call.name.replace("functions.", ""),
-      JSON.parse(message.function_call.arguments)
-    );
-    const newMessages = [
-      ...messages,
-      {
-        role: "function",
-        name: message.function_call.name,
-        content: JSON.stringify(functionResult),
-      },
-    ];
-
-    return handleChatCompletion(newMessages, functions, model, depth + 1);
+    console.log("handleChatCompletion", "error", "Should have called fetch_and_render", message);
+    throw new Error("Should have called fetch_and_render");
   }
 }
 
