@@ -466,7 +466,7 @@ const functions = [
   },
 ];
 
-export async function POST(req: Request): Promise<String> {
+export async function POST(req: Request): Promise<StreamingTextResponse> {
   console.log("POST", "req", req);
 
   const json = await req.json();
@@ -483,7 +483,7 @@ async function handleChatCompletion(
   functions: any[],
   model: string,
   depth: number
-): Promise<String> {
+): Promise<StreamingTextResponse> {
   console.log("handleChatCompletion", "messages", messages, "depth", depth);
 
   if (depth >= 3) throw new Error("Maximum recursion depth reached");
@@ -512,14 +512,19 @@ async function handleChatCompletion(
   console.log("handleChatCompletion", "function_call", function_call);
 
   if (function_call && function_call.name == "render_and_fetch") {
-    const fetchFunctions = function_call.arguments.fetchFunctions || [];
-    const renderFunctions = function_call.arguments.renderFunctions || [];
+    const args = JSON.parse(function_call.arguments);
+    const fetchFunctions = args.fetchFunctions || [];
+    const renderFunctions = args.renderFunctions || [];
     const newMessages = messages;
+
+    console.log("handleChatCompletion", "fetchFunctions", fetchFunctions);
+    console.log("handleChatCompletion", "renderFunctions", renderFunctions);
+    console.log("handleChatCompletion", "newMessages", newMessages);
 
     if (renderFunctions.length > 0) {
       console.log("handleChatCompletion", "renderFunctions", renderFunctions);
 
-      renderFunctions.each((renderFunction: any) => {
+      for(const renderFunction of renderFunctions) {
         newMessages.push({
           role: "assistant",
           function_call: {
@@ -527,13 +532,13 @@ async function handleChatCompletion(
             arguments: renderFunction.arguments,
           },
         });
-      });
+      };
     }
 
     if (fetchFunctions.length > 0) {
       console.log("handleChatCompletion", "fetchFunctions", fetchFunctions);
 
-      fetchFunctions.each(async (fetchFunction: any) => {
+      for(const fetchFunction of fetchFunctions) {
         newMessages.push({
           role: "function",
           name: fetchFunction.name,
@@ -542,7 +547,7 @@ async function handleChatCompletion(
             JSON.parse(fetchFunction.arguments)
           ),
         });
-      });
+      };
 
       console.log(
         "handleChatCompletion",
@@ -558,9 +563,10 @@ async function handleChatCompletion(
         depth + 1
       );
     } else {
-      console.log("handleChatCompletion", "no new fetch functions");
       // No more fetch functions, so render the output
-      return JSON.stringify({ messages: newMessages });
+      console.log("handleChatCompletion", "no new fetch functions", "newMessages", newMessages);
+      // @ts-ignore
+      return new StreamingTextResponse(JSON.stringify({ messages: newMessages }));
     }
   } else {
     console.log(
