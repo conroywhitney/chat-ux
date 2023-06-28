@@ -491,12 +491,11 @@ async function handleChatCompletion(
 
   if (function_call && function_call.name == "fetch_and_render") {
     const fetchFunctions = function_call.arguments.fetchFunctions || [];
-    const renderFunctions = function_call.arguments.renderFunctions || [];
+    const newMessages = messages;
 
     if (fetchFunctions.length > 0) {
-      // Call fetch functions then re-run the chat completion
-      const fetchResults = await Promise.all(
-        fetchFunctions.map((fetchFunction: any) => (
+      fetchFunctions.each((fetchFunction: any) => {
+        newMessages.push(
           {
             role: "function",
             name: fetchFunction.name,
@@ -505,14 +504,13 @@ async function handleChatCompletion(
               JSON.parse(fetchFunction.arguments)
             )
           }
-        ))
-      ) || [];
+        )
+      });
 
-      const newMessages = messages.concat(fetchResults);
-      return handleChatCompletion(newMessages, functions, model, depth + 1);
+      return await handleChatCompletion(newMessages, functions, model, depth + 1);
     } else {
       // No more fetch functions, so render the output
-      return new StreamingTextResponse(JSON.stringify(message));
+      return new StreamingTextResponse(message);
     }
   } else {
     console.log("handleChatCompletion", "error", "Should have called fetch_and_render", message);

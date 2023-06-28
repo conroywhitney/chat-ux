@@ -28,7 +28,7 @@ const renderComponent = ({
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) => {
   try {
-    if (name == "render_response") {
+    if (name == "fetch_and_render") {
       const { elements } = JSON.parse(args);
 
       return (
