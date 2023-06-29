@@ -4,6 +4,14 @@ import { Message } from 'ai/react'
 import { useChat } from 'ai/react'
 import { ChatRequest, FunctionCallHandler, nanoid } from 'ai'
 
+interface ComponentArgs {
+  [key: string]: any;
+  onSubmit: (value: any) => void;
+}
+
+const handleClick = ({ id, value }: { id: string; value: string }) => console.log("handleClick", id, value);
+const handleSubmit = ({ id, value }: { id: string; value: string }) => console.log("handleSubmit", id, value);
+
 export default function ChatExperimental() {
   const functionCallHandler: FunctionCallHandler = async (
     chatMessages,
@@ -100,13 +108,15 @@ export default function ChatExperimental() {
   // Generate a map of message role to text color
   const roleToColorMap: Record<Message['role'], string> = {
     system: 'red',
-    user: 'black',
+    user: 'white',
     function: 'blue',
     assistant: 'green'
   }
 
   const getRenderedMessage = (m: Message) => {
     if (m.content === '' && m.function_call !== undefined) {
+      console.log("function_call", m.function_call);
+
       const functionCallString =
         typeof m.function_call === 'string'
           ? m.function_call

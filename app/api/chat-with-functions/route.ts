@@ -13,6 +13,56 @@ export const runtime = 'edge'
 
 const functions: ChatCompletionFunctions[] = [
   {
+    name: "render_buttons",
+    description:
+      "Create a row of one or more interactive buttons. Essentially useful for responses requiring user's choice among multiple options.",
+    parameters: {
+      type: "object",
+      properties: {
+        elements: {
+          description: "One or more button(s) to render.",
+          type: "array",
+          items: {
+            type: "object",
+            description: "A button to render.",
+            properties: {
+              id: {
+                type: "string",
+                description:
+                  "A unique identifier per button; matches the return value when this button is clicked.",
+              },
+              label: {
+                type: "string",
+                description: "The display text on the button.",
+              },
+              value: {
+                type: "string",
+                description:
+                  "The return value when the corresponding button is clicked.",
+              },
+              colorTheme: {
+                type: "string",
+                enum: [
+                  "default",
+                  "primary",
+                  "secondary",
+                  "accent",
+                  "error",
+                  "info",
+                  "success",
+                  "warning",
+                ],
+                description: "The theme color of the button.",
+              },
+            },
+            required: ["id", "label", "value", "colorTheme"],
+          },
+        },
+      },
+      required: ["elements"],
+    },
+  },
+  {
     name: 'get_current_weather',
     description: 'Get the current weather',
     parameters: {
