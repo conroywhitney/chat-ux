@@ -526,11 +526,9 @@ async function handleChatCompletion(
 
       for (const renderFunction of renderFunctions) {
         newMessages.push({
-          role: "assistant",
-          function_call: {
-            name: renderFunction.name.replace("functions.", ""),
-            arguments: renderFunction.arguments,
-          },
+          role: "function",
+          name: renderFunction.name.replace("functions.", ""),
+          content: JSON.stringify(renderFunction.arguments),
         });
       }
     }
