@@ -18,17 +18,17 @@ export interface ChatList {
 
 const renderComponent = ({
   name,
-  arguments: args,
+  args,
   handleClick,
   handleSubmit,
 }: {
   name: string;
-  arguments: string;
+  args: string;
   handleClick: ({ id, value }: { id: string; value: string }) => void;
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) => {
   try {
-    if (name == "render_response") {
+    if (name == "fetch_and_render") {
       const { elements } = JSON.parse(args);
 
       return (
@@ -61,28 +61,56 @@ const renderComponent = ({
 };
 
 const renderMessage = (
-  message: Message,
+  message: any,
   handleClick: ({ id, value }: { id: string; value: string }) => void,
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 ) => {
-  const { content, role } = message;
-  const isComponent = content.includes("render_");
+  let parsedMessage = message;
+  try {
+    parsedMessage = JSON.parse(message.content);
+  } catch (error) {}
 
-  return (
-    <div
-      key={message.id}
-      className="py-4"
-    >
-      {isComponent &&
-        renderComponent({ ...JSON.parse(content), handleClick, handleSubmit })}
-      {!isComponent && (
-        <ChatBubble
-          value={content}
-          user={role == "user"}
-        />
-      )}
-    </div>
-  );
+  console.log("renderMessage 1", parsedMessage);
+
+  if (parsedMessage.content?.includes("function_call")) {
+    parsedMessage = parsedMessage.content;
+    try {
+      parsedMessage = JSON.parse(message.content);
+    } catch (error) {
+      console.log("renderMessage error", error);
+    }
+
+    console.log("renderMessage 2", parsedMessage);
+  }
+
+  const { content, role, function_call } = parsedMessage;
+  const { name, arguments: args } = function_call || {};
+  const isComponent = name?.includes("render_") || false;
+
+  console.log("renderMessage 3", parsedMessage, isComponent);
+
+  const { messages } = parsedMessage;
+  if (messages) {
+    return messages.map((message: any) =>
+      renderMessage(message, handleClick, handleSubmit)
+    );
+  } else {
+    return (
+      <div
+        key={parsedMessage.id}
+        className="py-4"
+      >
+        {content && (
+          <ChatBubble
+            value={content}
+            user={role == "user"}
+          />
+        )}
+        {isComponent &&
+          renderComponent({ name, args, handleClick, handleSubmit })}
+      </div>
+    );
+  }
 };
 
 export function ChatList({ append, messages }: ChatList) {
@@ -109,7 +137,7 @@ export function ChatList({ append, messages }: ChatList) {
       if (append) {
         append({
           id: nanoid(),
-          content: JSON.stringify({ id, value }),
+          content: JSON.stringify({ button: id }),
           role: "user",
         });
       }
@@ -118,6 +146,8 @@ export function ChatList({ append, messages }: ChatList) {
   );
 
   if (!messages.length) return null;
+
+  console.log("ChatList", "messages", messages);
 
   return (
     <div className="relative mx-auto max-w-2xl px-4">

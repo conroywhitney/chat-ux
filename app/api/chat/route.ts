@@ -9,11 +9,81 @@ You are an advance AI system capable of interactive dialogues using text respons
 
 1. "render_chat_bubble" - Use this function to generate a textual message. This is ideal for direct responses, instructions, or information sharing that require no user interaction.
 2. "render_buttons" - This function allows you to present multiple pre-defined options to the user. Consider utilizing this when users need to make straightforward decisions or select from several options.
-3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically.
-4. "render_response" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_form", and "render_chat_bubble").
+3. "render_form" - Use this ability to collect more complex or multiple pieces of information from the user. This arranges questions in a structured manner and collects user input systematically. Especially useful for gathering filters or parameters before performing a fetch_* call.
+4. "render_table" - This function allows you to present tabular data to the user. This is ideal for displaying information in a structured manner, such as a list of products, or a list of options to choose from.
+5. "render_and_fetch" - This is a special function used for combining multiple response elements. It always arranges components in a vertical sequence (column), maintaining the conversational flow. You include the different components that form the response as a list in this function. Each element in the list follows the structure of its respective render function ("render_buttons", "render_chat_bubble", "render_form", and "rendere_table").
 
-Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_response" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
+Remember, your aim is to create a dynamic and engaging conversation, where text-only responses are supplemented with UI components, where suitable. Utilize the power of these functions, and consider using "render_and_fetch" to combine text with other interactive elements. This will create richer interactions and ensure a more engaging experience for the users.
+
+IMPORTANT: Due to technology limitations, once you call a "render_" function, that's the end of your "turn", and have to wait for a user response. If you need to "fetch_" data, do so before any "render_"ings.
 `;
+
+interface ProductFilters {
+  category: string;
+  color: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  color: string;
+}
+
+function fetch_products(filters: ProductFilters): Product[] {
+  const { category, color } = filters;
+  console.log("fetch_products", category, color);
+
+  const products = [
+    {
+      id: "1",
+      name: "Product 1",
+      description: "This product is great!",
+      price: 100,
+      category: "Category 1",
+      color: "red",
+    },
+    {
+      id: "2",
+      name: "Product 2",
+      description: "This product is also great!",
+      price: 200,
+      category: "Category 2",
+      color: "blue",
+    },
+    {
+      id: "3",
+      name: "Product 3",
+      description: "This product is better than the others!",
+      price: 300,
+      category: "Category 3",
+      color: "green",
+    },
+    {
+      id: "4",
+      name: "Product 4",
+      description: "This product is better yet!",
+      price: 400,
+      category: "Category 1",
+      color: "blue",
+    },
+    {
+      id: "5",
+      name: "Product 5",
+      description: "This product is the absolute best!",
+      price: 500,
+      category: "Category 2",
+      color: "red",
+    },
+  ];
+
+  return products.filter(
+    product =>
+      (!category || product.category === category) &&
+      (!color || product.color === color)
+  );
+}
 
 // placeholder function for a future API call to get the weather
 function fetch_current_weather(args: { location: string; format: string }) {
@@ -77,6 +147,56 @@ function fetch_n_day_weather_forecast(args: {
 // Array of functions that GPT can call
 const functions = [
   {
+    name: "fetch_products",
+    description:
+      "Fetch a list of products based on the provided filters. The filters are optional, and if not provided, the function returns all products.",
+    parameters: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          description: "The category of products to fetch.",
+          enum: ["Category 1", "Category 2", "Category 3"],
+        },
+        color: {
+          type: "string",
+          description: "The color of products to fetch.",
+          enum: ["red", "blue", "green"],
+        },
+      },
+    },
+    required: [],
+    returns: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "The unique identifier of the product.",
+          },
+          name: {
+            type: "string",
+            description: "The name of the product.",
+          },
+          price: {
+            type: "number",
+            description: "The price of the product.",
+          },
+          category: {
+            type: "string",
+            description: "The category of the product.",
+          },
+          color: {
+            type: "string",
+            description: "The color of the product.",
+          },
+        },
+      },
+    },
+  },
+
+  {
     name: "render_buttons",
     description:
       "Create a row of one or more interactive buttons. Essentially useful for responses requiring user's choice among multiple options.",
@@ -129,7 +249,7 @@ const functions = [
   {
     name: "render_form",
     description:
-      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained.",
+      "Creates a form to gather information from the user systematically. Use this when multiple or complex information needs to be obtained. Especially useful for providing filter options before fetching data.",
     parameters: {
       type: "object",
       properties: {
@@ -287,42 +407,73 @@ const functions = [
     },
   },
   {
-    name: "render_response",
+    name: "render_and_fetch",
     description:
-      "A wrapper function to bundle various response components (buttons, forms, messages) into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
+      "The function to bundle various fetch requests and/or rendering of components into a column for user-friendly viewing. It structures interactions and maintains the conversation's flow.",
     parameters: {
       type: "object",
       properties: {
-        elements: {
+        fetchFunctions: {
           type: "array",
           description:
-            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_form, and render_chat_bubble).",
+            "(Optional) Array of the different fetch functions to call before rendering the output. Each item in the array follows the structure of its respective fetch function (fetch_products).",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                enum: ["fetch_products"],
+                description: "The name of the fetch function to call.",
+              },
+              arguments: {
+                type: "string",
+                description: "The arguments to pass to the fetch function.",
+              },
+            },
+            required: ["name", "arguments"],
+          },
+        },
+        renderFunctions: {
+          type: "array",
+          description:
+            "Array of the different components that form the response. Each element in the array follows the structure of its respective render function (render_buttons, render_chat_bubble, render_form, and/or render_table).",
           items: {
             type: "object",
             description: "A component to render.",
             properties: {
               name: {
                 type: "string",
-                enum: ["render_buttons", "render_form", "render_chat_bubble"],
+                enum: [
+                  "render_buttons",
+                  "render_chat_bubble",
+                  "render_form",
+                  "render_table",
+                ],
                 description: "The name of the render function.",
               },
               arguments: {
                 type: "string",
-                description: "The arguments to pass to the function.",
+                description:
+                  "The arguments to pass to the function (per the function's definition).",
               },
             },
             required: ["name", "arguments"],
           },
         },
       },
-      required: ["elements"],
+      required: [],
     },
   },
 ];
 
-export async function POST(req: Request) {
+export async function POST(req: Request): Promise<StreamingTextResponse> {
+  console.log("POST", "req", req);
+
   const json = await req.json();
+  console.log("POST", "json", json);
+
   const { messages } = json;
+  console.log("POST", "messages", messages);
 
   return await handleChatCompletion(messages, functions, "gpt-4-0613", 0);
 }
@@ -333,7 +484,9 @@ async function handleChatCompletion(
   model: string,
   depth: number
 ): Promise<StreamingTextResponse> {
-  if (depth >= 10) throw new Error("Maximum recursion depth reached");
+  console.log("handleChatCompletion", "messages", messages, "depth", depth);
+
+  if (depth >= 3) throw new Error("Maximum recursion depth reached");
 
   const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -341,42 +494,101 @@ async function handleChatCompletion(
   const openai = new OpenAIApi(configuration);
 
   const response = await openai.createChatCompletion({
-    function_call: { name: "render_response" },
+    function_call: { name: "render_and_fetch" },
     functions,
     messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
     model,
     stream: false,
   });
+  console.log("handleChatCompletion", "response", response);
 
   const result = await response.json();
-  console.log("result", result);
+  console.log("handleChatCompletion", "result", result);
 
-  const { finish_reason, message } = result.choices[0];
+  const { message } = result.choices[0];
+  console.log("handleChatCompletion", "message", message);
 
-  if (message.function_call.name.startsWith("render_")) {
-    console.log("rendering", message);
-    // @ts-ignore
-    return new StreamingTextResponse(JSON.stringify(message.function_call));
+  const { function_call } = message;
+  console.log("handleChatCompletion", "function_call", function_call);
+
+  if (function_call && function_call.name == "render_and_fetch") {
+    const args = JSON.parse(function_call.arguments);
+    const fetchFunctions = args.fetchFunctions || [];
+    const renderFunctions = args.renderFunctions || [];
+    const newMessages = messages;
+
+    console.log("handleChatCompletion", "fetchFunctions", fetchFunctions);
+    console.log("handleChatCompletion", "renderFunctions", renderFunctions);
+    console.log("handleChatCompletion", "newMessages", newMessages);
+
+    if (renderFunctions.length > 0) {
+      console.log("handleChatCompletion", "renderFunctions", renderFunctions);
+
+      for (const renderFunction of renderFunctions) {
+        newMessages.push({
+          role: "function",
+          name: renderFunction.name.replace("functions.", ""),
+          content: JSON.stringify(renderFunction.arguments),
+        });
+      }
+    }
+
+    if (fetchFunctions.length > 0) {
+      console.log("handleChatCompletion", "fetchFunctions", fetchFunctions);
+
+      for (const fetchFunction of fetchFunctions) {
+        newMessages.push({
+          role: "function",
+          name: fetchFunction.name,
+          content: JSON.stringify(await callFunction(
+            fetchFunction.name.replace("functions.", ""),
+            fetchFunction.arguments && fetchFunction.arguments.length > 0 ? JSON.parse(fetchFunction.arguments) : {}
+          )),
+        });
+      }
+
+      console.log(
+        "handleChatCompletion",
+        "about to recurse",
+        "newMessages",
+        newMessages
+      );
+
+      return await handleChatCompletion(
+        newMessages,
+        functions,
+        model,
+        depth + 1
+      );
+    } else {
+      // No more fetch functions, so render the output
+      console.log(
+        "handleChatCompletion",
+        "no new fetch functions",
+        "newMessages",
+        newMessages
+      );
+
+      return new StreamingTextResponse(
+        // @ts-ignore
+        JSON.stringify({ messages: newMessages })
+      );
+    }
   } else {
-    const functionResult = callFunction(
-      message.function_call.name,
-      JSON.parse(message.function_call.arguments)
+    console.log(
+      "handleChatCompletion",
+      "error",
+      "Should have called render_and_fetch",
+      message
     );
-    const newMessages = [
-      ...messages,
-      {
-        role: "function",
-        name: message.function_call.name,
-        content: JSON.stringify(functionResult),
-      },
-    ];
-
-    return handleChatCompletion(newMessages, functions, model, depth + 1);
+    throw new Error("Should have called render_and_fetch");
   }
 }
 
-function callFunction(name: string, args: any): any {
+async function callFunction(name: string, args: any): Promise<any> {
   switch (name) {
+    case "fetch_products":
+      return fetch_products(args);
     case "fetch_current_weather":
       return fetch_current_weather(args);
     case "fetch_n_day_weather_forecast":
